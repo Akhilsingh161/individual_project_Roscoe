@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROSCOE | Personal Life & Career Companion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar">
+      <a class="brand" href="#" onclick="navigate('dashboard'); return false;">
+        <span class="brand-mark">R</span>
+        <span>ROSCOE<small>PERSONAL LIFE & CAREER COMPANION</small></span>
+      </a>
+
+      <p class="nav-heading">YOUR WORKSPACE</p>
+
+      <nav id="navigation">
+        <button class="nav-link active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-link" data-page="profile">♙ <span>My Profile</span></button>
+        <button class="nav-link" data-page="challenges">⚡ <span>Daily Challenges</span></button>
+        <button class="nav-link" data-page="learning">⌘ <span>Learning Path</span></button>
+        <button class="nav-link" data-page="interview">◎ <span>Interview Arena</span></button>
+        <button class="nav-link" data-page="career">↗ <span>Career Readiness</span></button>
+        <button class="nav-link" data-page="resume">▤ <span>Smart Resume</span></button>
+        <button class="nav-link" data-page="planner">▦ <span>Life Planner</span></button>
+        <button class="nav-link" data-page="settings">⚙ <span>Settings</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="mini-status"><span class="live-dot"></span> Your progress is saved locally</div>
+        <p>YOUR GOALS. YOUR LEVEL. YOUR JOURNEY.</p>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">YOUR PERSONAL GROWTH SPACE</p>
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+        <div class="topbar-right">
+          <span class="date-label" id="today-date"></span>
+          <button class="avatar-button" onclick="navigate('profile')" title="Open profile">U</button>
+        </div>
+      </header>
+
+      <section id="app-content"></section>
+
+      <footer class="main-footer">
+        ROSCOE · YOUR PERSONAL LIFE COMPANION
+        <span>Frontend demo · Data stored in this browser</span>
+      </footer>
+    </main>
+
+    <aside class="roscoe-companion">
+      <div class="companion-top">
+        <span><span class="live-dot"></span> ROSCOE IS ONLINE</span>
+        <span class="companion-version">v2.0</span>
+      </div>
+
+      <div class="bot-avatar realistic-bot">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+
+       
+<img
+  class="bot-real-image"
+  src="./roscoe-girl.jpg"
+  alt="ROSCOE, a female AI companion wearing a navy tracksuit"
+  onerror="this.style.display='none'; this.parentElement.classList.add('image-missing');"
+>
+
+
+        <div class="bot-image-shade"></div>
+
+        <div class="bot-live-label">
+          <span class="live-dot"></span> AI COMPANION ACTIVE
+        </div>
+
+        <div class="bot-image-caption">
+          <span>YOUR PERSONAL AI</span>
+          <strong>ROSCOE</strong>
+        </div>
+      </div>
+
+      <h2>ROSCOE</h2>
+      <p class="bot-subtitle">YOUR PERSONAL AI COMPANION</p>
+
+      <div class="companion-divider"></div>
+
+      <div class="bot-message" id="bot-message">
+        Hey! I'm ROSCOE. Let's make today count. What would you like to work on?
+      </div>
+
+      <div class="bot-quick-actions">
+        <button onclick="roscoeReply('motivation')">✦ Motivate me</button>
+        <button onclick="roscoeReply('challenge')">⚡ Give me a challenge</button>
+        <button onclick="roscoeReply('career')">↗ Career guidance</button>
+      </div>
+
+      <form id="roscoe-chat-form">
+        <input id="roscoe-chat-input" placeholder="Talk to ROSCOE..." autocomplete="off" aria-label="Message ROSCOE">
+        <button type="submit" aria-label="Send message">➤</button>
+      </form>
+
+      <p class="bot-footer">GROW AT YOUR OWN PACE</p>
+    </aside>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
