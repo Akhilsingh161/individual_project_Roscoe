@@ -1,1005 +1,1587 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-:root {
-    --bg: #070e1b;
-    --panel: #0d192b;
-    --panel2: #12223a;
-    --border: #203652;
-    --text: #edf4ff;
-    --muted: #9bb0ca;
-    --blue: #328be9;
-    --cyan: #53e5f5;
-    --green: #51e1ae;
-    --purple: #8177ff;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: Inter, Arial, sans-serif;
-    min-height: 100vh;
-}
-
-button, input, textarea, select {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-.app-shell {
-    display: grid;
-    grid-template-columns: 280px minmax(400px, 1fr) 340px;
-    min-height: 100vh;
-}
-
-/* SIDEBAR */
-
-.sidebar {
-    background: #080f1e;
-    border-right: 1px solid var(--border);
-    padding: 30px 24px;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    color: white;
-    text-decoration: none;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-.brand small {
-    display: block;
-    font-size: 8px;
-    letter-spacing: .8px;
-    margin-top: 5px;
-    color: #8db5df;
-    max-width: 150px;
-}
-
-.brand-mark {
-    height: 52px;
-    width: 52px;
-    background: linear-gradient(135deg,#48d8ec,#519dff);
-    color: #07172b;
-    display: grid;
-    place-items: center;
-    border-radius: 17px;
-    font-size: 28px;
-    font-weight: 800;
-}
-
-.nav-heading {
-    color: #7197c3;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.8px;
-    margin: 45px 0 17px 8px;
-}
-
-#navigation {
-    display: grid;
-    gap: 7px;
-}
-
-.nav-link {
-    background: transparent;
-    color: #9dbde0;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    padding: 15px 13px;
-    text-align: left;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: .2s;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: white;
-    background: #102033;
-    border-color: #21445d;
-}
-
-.nav-link.active {
-    border-left: 4px solid var(--cyan);
-}
-
-.sidebar-bottom {
-    margin-top: auto;
-    padding-top: 30px;
-}
-
-.sidebar-bottom p {
-    font-size: 9px;
-    letter-spacing: 1.3px;
-    color: #6688ad;
-    margin-top: 17px;
-}
-
-.mini-status {
-    color: var(--muted);
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    background: var(--green);
-    box-shadow: 0 0 10px var(--green);
-}
-
-/* MAIN */
-
-.main-area {
-    padding: 36px 40px 25px;
-    min-width: 0;
-    background: linear-gradient(145deg,#091322,#070d19);
-}
-
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.eyebrow {
-    color: #7da7d6;
-    letter-spacing: 2px;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 13px;
-}
-
-.topbar h1 {
-    font-size: 36px;
-    letter-spacing: -1px;
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.date-label {
-    color: #91b5dc;
-    font-size: 13px;
-}
-
-.avatar-button {
-    height: 46px;
-    width: 46px;
-    border-radius: 14px;
-    border: 1px solid #3475a9;
-    color: white;
-    background: linear-gradient(135deg,#1b5377,#342d75);
-    font-weight: 700;
-}
-
-.main-footer {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 35px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-    color: #6689ad;
-    font-size: 9px;
-    letter-spacing: 1.2px;
-}
-
-.main-footer span {
-    letter-spacing: 0;
-}
-
-/* DASHBOARD */
-
-.hero-card {
-    position: relative;
-    overflow: hidden;
-    padding: 34px;
-    min-height: 310px;
-    border-radius: 22px;
-    border: 1px solid #284c76;
-    background:
-        radial-gradient(circle at 90% 10%,rgba(66,113,190,.18),transparent 30%),
-        linear-gradient(120deg,#132947,#0d192e);
-}
-
-.hero-card::after {
-    content: "";
-    position: absolute;
-    width: 270px;
-    height: 270px;
-    right: -70px;
-    top: -130px;
-    border: 1px solid rgba(83,229,245,.12);
-    border-radius: 50%;
-    box-shadow: 0 0 0 25px rgba(83,229,245,.025),
-                0 0 0 55px rgba(83,229,245,.02);
-}
-
-.tag {
-    display: inline-flex;
-    padding: 9px 13px;
-    color: var(--cyan);
-    background: #112c42;
-    border: 1px solid #25516c;
-    border-radius: 30px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .7px;
-}
-
-.hero-card h2 {
-    font-size: clamp(27px,3vw,43px);
-    line-height: 1.2;
-    margin: 23px 0 15px;
-    max-width: 700px;
-}
-
-.hero-card p {
-    color: var(--muted);
-    line-height: 1.8;
-    max-width: 650px;
-    font-size: 14px;
-}
-
-.button-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 23px;
-}
-
-.btn {
-    border: 1px solid var(--border);
-    background: #172b46;
-    color: white;
-    padding: 12px 17px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 12px;
-}
-
-.btn-primary {
-    background: linear-gradient(100deg,#269ee9,#5268ee);
-    border: 0;
-}
-
-.btn-danger {
-    background: #49232d;
-    border-color: #7b3848;
-}
-
-.btn:hover {
-    filter: brightness(1.2);
-}
-
-.section-heading {
-    margin: 30px 0 16px;
-}
-
-.section-heading h2 {
-    font-size: 19px;
-    margin-bottom: 6px;
-}
-
-.section-heading p,
-.muted {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.7;
-}
-
-.small {
-    font-size: 11px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3,minmax(0,1fr));
-    gap: 14px;
-}
-
-.stat-card {
-    padding: 20px;
-    background: #101d30;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-}
-
-.stat-card span {
-    font-size: 10px;
-    color: #8fb9e2;
-    letter-spacing: .5px;
-}
-
-.stat-card strong {
-    display: block;
-    font-size: 30px;
-    margin: 10px 0 5px;
-}
-
-.stat-card small {
-    color: var(--green);
-    font-size: 10px;
-}
-
-.workspace-grid {
-    display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 14px;
-}
-
-.workspace-card {
-    padding: 20px;
-    background: #101d30;
-    border: 1px solid var(--border);
-    border-radius: 17px;
-    cursor: pointer;
-    transition: .2s;
-}
-
-.workspace-card:hover {
-    border-color: var(--cyan);
-    transform: translateY(-3px);
-}
-
-.workspace-icon {
-    height: 44px;
-    width: 44px;
-    display: grid;
-    place-items: center;
-    border-radius: 13px;
-    background: #123449;
-    color: var(--cyan);
-    font-size: 22px;
-    margin-bottom: 15px;
-}
-
-.workspace-card h3 {
-    font-size: 15px;
-    margin-bottom: 8px;
-}
-
-.workspace-card p {
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--muted);
-}
-
-/* GENERAL PAGE COMPONENTS */
-
-.page-intro {
-    margin-bottom: 25px;
-}
-
-.page-intro h2 {
-    font-size: 24px;
-    margin-bottom: 8px;
-}
-
-.card {
-    padding: 22px;
-    border-radius: 16px;
-    background: #101d30;
-    border: 1px solid var(--border);
-    margin-bottom: 16px;
-}
-
-.card h3 {
-    font-size: 16px;
-    margin-bottom: 13px;
-}
-
-.card p {
-    line-height: 1.7;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 15px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 15px;
-}
-
-.field label {
-    font-size: 12px;
-    color: #a8c2df;
-}
-
-.field input,
-.field textarea,
-.field select {
-    width: 100%;
-    padding: 13px;
-    border-radius: 9px;
-    color: white;
-    background: #091626;
-    border: 1px solid #2a405b;
-    outline: none;
-}
-
-.field input:focus,
-.field textarea:focus,
-.field select:focus {
-    border-color: var(--cyan);
-}
-
-.field textarea {
-    min-height: 110px;
-    resize: vertical;
-}
-
-.field select option {
-    background: #101d30;
-}
-
-.item-list {
-    display: grid;
-    gap: 10px;
-}
-
-.list-item {
-    background: #0b1728;
-    padding: 15px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.list-item.done {
-    opacity: .6;
-}
-
-.list-item.done .item-title {
-    text-decoration: line-through;
-}
-
-.item-title {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.item-subtitle {
-    color: var(--muted);
-    font-size: 11px;
-    margin-top: 5px;
-}
-
-.tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.tag-list span {
-    background: #143047;
-    color: #8fe8f0;
-    border-radius: 20px;
-    padding: 8px 12px;
-    font-size: 11px;
-}
-
-.progress-track {
-    width: 100%;
-    height: 8px;
-    background: #24374c;
-    border-radius: 20px;
-    overflow: hidden;
-    margin: 10px 0;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg,#29a9eb,#50e5bd);
-    border-radius: 20px;
-}
-
-.empty-state {
-    padding: 25px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-}
-
-/* RIGHT COMPANION */
-
-.roscoe-companion {
-    background: #080f1e;
-    border-left: 1px solid var(--border);
-    padding: 22px;
-    min-width: 0;
-}
-
-.companion-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    color: #a9c9e9;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .7px;
-}
-
-.companion-version {
-    color: #7898bc;
-}
-
-/* AVATAR - CSS STYLISED PROTOTYPE */
-
-.realistic-bot {
-    position: relative;
-    width: 100%;
-    height: 330px;
-    border-radius: 23px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background:
-        radial-gradient(ellipse at 50% 30%,#657f9b,#273c59 50%,#101b2e);
-    border: 1px solid #28678c;
-}
-
-.avatar-glow {
-    position: absolute;
-    width: 230px;
-    height: 230px;
-    border-radius: 50%;
-    background: #67baff;
-    filter: blur(65px);
-    opacity: .24;
-}
-
-.back-hair {
-    position: absolute;
-    width: 160px;
-    height: 210px;
-    top: 35px;
-    background: linear-gradient(100deg,#80603a,#e5c28c,#8a6238);
-    border-radius: 48% 48% 30% 30%;
-    z-index: 1;
-}
-
-.avatar-face {
-    position: absolute;
-    width: 126px;
-    height: 165px;
-    top: 48px;
-    border-radius: 47% 47% 45% 45%;
-    background: linear-gradient(110deg,#f5cbb4,#e7ad91);
-    z-index: 3;
-    box-shadow: inset -9px 0 17px rgba(130,65,44,.12);
-}
-
-.hair-top {
-    position: absolute;
-    width: 130px;
-    height: 65px;
-    top: -8px;
-    left: -2px;
-    border-radius: 65% 55% 25% 20%;
-    background: linear-gradient(110deg,#a27a48,#f1d39b,#98703e);
-    z-index: 4;
-}
-
-.avatar-eyebrows {
-    position: absolute;
-    top: 69px;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    padding: 0 23px;
-}
-
-.avatar-eyebrows span {
-    width: 20px;
-    height: 3px;
-    border-radius: 50%;
-    background: #79533e;
-}
-
-.avatar-eyes {
-    position: absolute;
-    top: 79px;
-    left: 24px;
-    display: flex;
-    gap: 37px;
-}
-
-.eye {
-    width: 12px;
-    height: 7px;
-    border-radius: 50%;
-    background: #35251f;
-    animation: blink 5s infinite;
-}
-
-@keyframes blink {
-    0%,45%,49%,100% { transform: scaleY(1); }
-    47% { transform: scaleY(.08); }
-}
-
-.avatar-nose {
-    position: absolute;
-    top: 84px;
-    left: 60px;
-    height: 26px;
-    width: 8px;
-    border-right: 2px solid rgba(130,80,65,.25);
-    border-radius: 50%;
-}
-
-.avatar-mouth {
-    position: absolute;
-    top: 119px;
-    left: 50px;
-    width: 26px;
-    height: 7px;
-    border-bottom: 2px solid #a64e57;
-    border-radius: 50%;
-    transition: .1s;
-}
-
-.avatar-neck {
-    position: absolute;
-    top: 194px;
-    width: 40px;
-    height: 54px;
-    background: #dfa990;
-    z-index: 2;
-}
-
-.avatar-body {
-    position: absolute;
-    top: 222px;
-    width: 220px;
-    height: 155px;
-    border-radius: 65px 65px 0 0;
-    background: #101c32;
-    overflow: hidden;
-    z-index: 2;
-}
-
-.avatar-shirt {
-    position: absolute;
-    left: 73px;
-    width: 75px;
-    height: 150px;
-    background: #f1eee8;
-    clip-path: polygon(0 0,100% 0,70% 100%,30% 100%);
-}
-
-.avatar-blazer {
-    position: absolute;
-    top: 0;
-    width: 85px;
-    height: 160px;
-    background: linear-gradient(110deg,#243953,#101a2b);
-}
-
-.avatar-blazer.left {
-    left: 0;
-    clip-path: polygon(0 0,100% 0,80% 100%,0 100%);
-}
-
-.avatar-blazer.right {
-    right: 0;
-    clip-path: polygon(0 0,100% 0,100% 100%,20% 100%);
-}
-
-.bot-live-label {
-    position: absolute;
-    z-index: 5;
-    left: 13px;
-    top: 13px;
-    padding: 9px 12px;
-    background: #081a2a;
-    border: 1px solid #28556a;
-    color: var(--cyan);
-    border-radius: 30px;
-    font-size: 9px;
-    font-weight: 700;
-}
-
-.bot-image-caption {
-    position: absolute;
-    bottom: 14px;
-    left: 17px;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.bot-image-caption span {
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: #c3d9ec;
-}
-
-.bot-image-caption strong {
-    font-size: 25px;
-    letter-spacing: 4px;
-}
-
-.companion-name {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 24px;
-    letter-spacing: 5px;
-}
-
-.bot-subtitle {
-    text-align: center;
-    margin-top: 7px;
-    color: #7cb9e9;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-}
-
-.voice-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 18px 0 12px;
-    padding: 11px;
-    background: #102034;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: #a9c5e2;
-    font-size: 10px;
-}
-
-.voice-indicator {
-    height: 8px;
-    width: 8px;
-    background: #8296af;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.voice-status.listening .voice-indicator {
-    background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
-    animation: pulse 1s infinite;
-}
-
-.voice-status.speaking .voice-indicator {
-    background: var(--purple);
-    animation: pulse .4s infinite;
-}
-
-.voice-status.error .voice-indicator {
-    background: #ff6262;
-}
-
-@keyframes pulse {
-    50% { transform: scale(1.8); opacity: .5; }
-}
-
-#roscoe-avatar.speaking .avatar-mouth {
-    animation: talking .18s infinite alternate;
-}
-
-@keyframes talking {
-    to {
-        height: 15px;
-        background: #a64e57;
-        border-radius: 30%;
+"use strict";
+
+/* ==========================================
+   ROSCOE V3 - COMPLETE APPLICATION
+========================================== */
+
+const $ = selector => document.querySelector(selector);
+
+const STORAGE_KEY = "roscoeAppDataV3";
+
+const defaultData = {
+    profile: {
+        name: "",
+        email: "",
+        education: "",
+        skills: [],
+        goals: "",
+        target: "",
+        bio: ""
+    },
+
+    tasks: [],
+
+    challenges: [],
+
+    skills: [],
+
+    planner: [],
+
+    resume: {
+        objective: "",
+        projects: "",
+        experience: "",
+        education: ""
+    },
+
+    chatHistory: [],
+
+    interviewHistory: []
+};
+
+let data = loadData();
+let currentPage = "dashboard";
+
+function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function loadData() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if (!saved) return clone(defaultData);
+
+        return {
+            ...clone(defaultData),
+            ...saved,
+            profile: {
+                ...defaultData.profile,
+                ...(saved.profile || {})
+            },
+            resume: {
+                ...defaultData.resume,
+                ...(saved.resume || {})
+            }
+        };
+    } catch (error) {
+        console.error("Storage error:", error);
+        return clone(defaultData);
     }
 }
 
-#roscoe-avatar.thinking .avatar-glow {
-    animation: thinkGlow .9s infinite alternate;
+function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-@keyframes thinkGlow {
-    to { opacity: .8; transform: scale(1.3); }
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
 }
 
-.bot-message {
-    min-height: 80px;
-    padding: 15px;
-    background: #102035;
-    border: 1px solid #203c56;
-    border-radius: 13px;
-    color: #dbe9f9;
-    font-size: 12px;
-    line-height: 1.7;
-    overflow-wrap: anywhere;
-}
+function showDate() {
+    const date = $("#today-date");
 
-.bot-quick-actions {
-    display: grid;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.bot-quick-actions button {
-    padding: 11px;
-    background: #111f33;
-    border: 1px solid #273d57;
-    border-radius: 10px;
-    text-align: left;
-    color: #a9c8e7;
-    font-size: 11px;
-}
-
-.bot-quick-actions button:hover {
-    border-color: var(--cyan);
-}
-
-#roscoe-chat-form {
-    display: flex;
-    gap: 5px;
-    margin-top: 14px;
-    padding: 5px;
-    border: 1px solid #29425b;
-    border-radius: 11px;
-    background: #091423;
-}
-
-#roscoe-chat-input {
-    width: 100%;
-    min-width: 0;
-    padding: 9px;
-    background: transparent;
-    border: 0;
-    outline: none;
-    color: white;
-    font-size: 11px;
-}
-
-#roscoe-chat-form button {
-    border: 0;
-    background: #2667e5;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-}
-
-.voice-controls {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.voice-button {
-    flex: 1;
-    padding: 10px 5px;
-    border-radius: 9px;
-    background: #123349;
-    color: #c8edfa;
-    border: 1px solid #28536a;
-    font-size: 10px;
-}
-
-.voice-button.active {
-    background: #174538;
-    border-color: var(--green);
-}
-
-.voice-button.secondary {
-    background: #142037;
-    border-color: #2b3b54;
-}
-
-.bot-footer {
-    margin-top: 27px;
-    text-align: center;
-    color: #6687ac;
-    font-size: 9px;
-    letter-spacing: 2px;
-}
-
-/* RESPONSIVE */
-
-@media(max-width:1250px) {
-    .app-shell {
-        grid-template-columns: 230px minmax(350px,1fr);
-    }
-
-    .roscoe-companion {
-        grid-column: 1/-1;
-        border-left: 0;
-        border-top: 1px solid var(--border);
-    }
-
-    .realistic-bot {
-        max-width: 350px;
-        margin: auto;
+    if (date) {
+        date.textContent = new Date().toLocaleDateString(
+            "en-IN",
+            {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            }
+        );
     }
 }
 
-@media(max-width:760px) {
-    .app-shell {
-        display: block;
+function navigate(page) {
+    const validPages = [
+        "dashboard",
+        "profile",
+        "challenges",
+        "learning",
+        "interview",
+        "career",
+        "resume",
+        "planner",
+        "settings"
+    ];
+
+    if (!validPages.includes(page)) return;
+
+    currentPage = page;
+
+    document.querySelectorAll(".nav-link").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.page === page
+        );
+    });
+
+    const title = page
+        .replace(/^./, char => char.toUpperCase())
+        .replace(/([A-Z])/g, " $1")
+        .trim();
+
+    $("#page-title").textContent = title;
+
+    renderPage();
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+
+function renderDashboard() {
+    const completed = data.tasks.filter(task => task.done).length;
+
+    const totalTasks = data.tasks.length;
+
+    const learned = data.skills.filter(skill => skill.learned).length;
+
+    const challengesDone =
+        data.challenges.filter(item => item.done).length;
+
+    const progress = totalTasks
+        ? Math.round(completed / totalTasks * 100)
+        : 0;
+
+    return `
+        <section class="hero-card">
+            <span class="tag">✦ YOUR PERSONAL GROWTH OS</span>
+
+            <h2>
+                Welcome back, ${escapeHTML(data.profile.name || "Boss")}.
+                <br>Let's build your next level.
+            </h2>
+
+            <p>
+                Your goals, learning, career preparation and daily
+                actions in one place. Small consistent steps create
+                meaningful progress.
+            </p>
+
+            <div class="button-row">
+                <button class="btn btn-primary"
+                    onclick="navigate('planner')">
+                    Open my planner ↗
+                </button>
+
+                <button class="btn"
+                    onclick="navigate('learning')">
+                    Continue learning
+                </button>
+            </div>
+        </section>
+
+        <div class="section-heading">
+            <h2>Your overview</h2>
+            <p>A quick look at your current progress.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>TASKS COMPLETED</span>
+                <strong>${completed}/${totalTasks}</strong>
+                <small>${progress}% completion</small>
+            </div>
+
+            <div class="stat-card">
+                <span>LEARNING PROGRESS</span>
+                <strong>${learned}</strong>
+                <small>Skills marked as learned</small>
+            </div>
+
+            <div class="stat-card">
+                <span>DAILY CHALLENGES</span>
+                <strong>${challengesDone}</strong>
+                <small>Challenges completed</small>
+            </div>
+        </div>
+
+        <div class="section-heading">
+            <h2>Your personal workspace</h2>
+            <p>Choose what you want to work on next.</p>
+        </div>
+
+        <div class="workspace-grid">
+            ${workspaceCard("⌘","Learning Studio",
+                "Build skills and create your learning roadmap.",
+                "learning")}
+
+            ${workspaceCard("↗","Career Navigator",
+                "Understand your career readiness.",
+                "career")}
+
+            ${workspaceCard("◎","Interview Arena",
+                "Practise skill-based interview questions.",
+                "interview")}
+
+            ${workspaceCard("▦","Life Planner",
+                "Organize your daily activities.",
+                "planner")}
+
+            ${workspaceCard("▤","Smart Resume",
+                "Maintain your career information.",
+                "resume")}
+
+            ${workspaceCard("⚡","Daily Challenges",
+                "Complete useful daily missions.",
+                "challenges")}
+        </div>
+    `;
+}
+
+function workspaceCard(icon, title, description, page) {
+    return `
+        <div class="workspace-card" onclick="navigate('${page}')">
+            <div class="workspace-icon">${icon}</div>
+            <h3>${title}</h3>
+            <p>${description}</p>
+        </div>
+    `;
+}
+
+/* ==========================================
+   PROFILE
+========================================== */
+
+function renderProfile() {
+    const p = data.profile;
+
+    return `
+        <div class="page-intro">
+            <h2>My Profile</h2>
+            <p class="muted">
+                Tell ROSCOE about your education, skills and goals.
+            </p>
+        </div>
+
+        <form id="profile-form" class="card">
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Full name</label>
+                    <input name="name"
+                        value="${escapeHTML(p.name)}"
+                        placeholder="Your name">
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input name="email" type="email"
+                        value="${escapeHTML(p.email)}"
+                        placeholder="Your email">
+                </div>
+
+                <div class="field">
+                    <label>Education</label>
+                    <input name="education"
+                        value="${escapeHTML(p.education)}"
+                        placeholder="B.Tech AI & ML">
+                </div>
+
+                <div class="field">
+                    <label>Target career</label>
+                    <input name="target"
+                        value="${escapeHTML(p.target)}"
+                        placeholder="AI Engineer">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Your skills (comma separated)</label>
+                <input name="skills"
+                    value="${escapeHTML(p.skills.join(", "))}"
+                    placeholder="Python, Java, Machine Learning">
+            </div>
+
+            <div class="field">
+                <label>Your goals</label>
+                <textarea name="goals"
+                    placeholder="What do you want to achieve?">${escapeHTML(p.goals)}</textarea>
+            </div>
+
+            <div class="field">
+                <label>About yourself</label>
+                <textarea name="bio"
+                    placeholder="Tell ROSCOE about yourself...">${escapeHTML(p.bio)}</textarea>
+            </div>
+
+            <button class="btn btn-primary">Save profile</button>
+        </form>
+
+        <div class="card">
+            <h3>Your saved skills</h3>
+            <div class="tag-list">
+                ${p.skills.length
+                    ? p.skills.map(s => `<span>${escapeHTML(s)}</span>`).join("")
+                    : "<span>No skills added yet</span>"}
+            </div>
+        </div>
+    `;
+}
+
+/* ==========================================
+   DAILY CHALLENGES
+========================================== */
+
+function renderChallenges() {
+    return `
+        <div class="page-intro">
+            <h2>Daily Challenges</h2>
+            <p class="muted">
+                Build consistency through small practical missions.
+            </p>
+        </div>
+
+        <form id="challenge-form" class="card">
+            <div class="field">
+                <label>New challenge</label>
+                <input name="title" required
+                    placeholder="Example: Practise Python for 30 minutes">
+            </div>
+            <button class="btn btn-primary">Add challenge</button>
+        </form>
+
+        <div class="card">
+            <h3>Your challenges</h3>
+            <div class="item-list">
+                ${data.challenges.length
+                    ? data.challenges.map((item,index) => `
+                        <div class="list-item ${item.done ? "done" : ""}">
+                            <div>
+                                <div class="item-title">${escapeHTML(item.title)}</div>
+                                <div class="item-subtitle">
+                                    ${item.done ? "Completed" : "Pending"}
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                onclick="toggleChallenge(${index})">
+                                ${item.done ? "Undo" : "Complete"}
+                            </button>
+                        </div>
+                    `).join("")
+                    : '<div class="empty-state">No challenges yet. Add your first mission.</div>'}
+            </div>
+        </div>
+    `;
+}
+
+function toggleChallenge(index) {
+    data.challenges[index].done = !data.challenges[index].done;
+    saveData();
+    renderPage();
+}
+
+/* ==========================================
+   LEARNING PATH
+========================================== */
+
+function renderLearning() {
+    const learned = data.skills.filter(s => s.learned).length;
+
+    const percent = data.skills.length
+        ? Math.round(learned / data.skills.length * 100)
+        : 0;
+
+    return `
+        <div class="page-intro">
+            <h2>Learning Path</h2>
+            <p class="muted">
+                Track your current skills and the skills you want to learn.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Your learning progress</h3>
+            <strong>${percent}%</strong>
+            <div class="progress-track">
+                <div class="progress-fill" style="width:${percent}%"></div>
+            </div>
+            <p class="muted small">
+                ${learned} of ${data.skills.length} skills completed
+            </p>
+        </div>
+
+        <form id="skill-form" class="card">
+            <div class="field">
+                <label>Skill name</label>
+                <input name="skill" required
+                    placeholder="Python, SQL, Machine Learning...">
+            </div>
+            <div class="field">
+                <label>Learning level</label>
+                <select name="level">
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                </select>
+            </div>
+            <button class="btn btn-primary">Add skill</button>
+        </form>
+
+        <div class="card">
+            <h3>Your skills</h3>
+            <div class="item-list">
+                ${data.skills.length
+                    ? data.skills.map((skill,index) => `
+                        <div class="list-item ${skill.learned ? "done" : ""}">
+                            <div>
+                                <div class="item-title">${escapeHTML(skill.name)}</div>
+                                <div class="item-subtitle">
+                                    ${escapeHTML(skill.level)}
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                onclick="toggleSkill(${index})">
+                                ${skill.learned ? "Learned" : "Mark learned"}
+                            </button>
+                        </div>
+                    `).join("")
+                    : '<div class="empty-state">Add your first skill to begin.</div>'}
+            </div>
+        </div>
+    `;
+}
+
+function toggleSkill(index) {
+    data.skills[index].learned = !data.skills[index].learned;
+    saveData();
+    renderPage();
+}
+
+/* ==========================================
+   INTERVIEW ARENA
+========================================== */
+
+function renderInterview() {
+    return `
+        <div class="page-intro">
+            <h2>Interview Arena</h2>
+            <p class="muted">
+                Practise interviews based on the exact skill you choose.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Start an AI interview</h3>
+
+            <form id="interview-form">
+                <div class="field">
+                    <label>Choose your skill</label>
+                    <input name="skill" required
+                        placeholder="Example: Python, Java, Machine Learning">
+                </div>
+
+                <div class="field">
+                    <label>Interview difficulty</label>
+                    <select name="level">
+                        <option>Beginner</option>
+                        <option>Intermediate</option>
+                        <option>Advanced</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Interview type</label>
+                    <select name="type">
+                        <option>Technical</option>
+                        <option>Conceptual</option>
+                        <option>Practical</option>
+                        <option>Mixed</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary">
+                    Start interview
+                </button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>How it works</h3>
+            <p class="muted">
+                ROSCOE asks one question at a time, evaluates your
+                answer, provides feedback and adjusts the next question
+                based on your performance.
+            </p>
+        </div>
+
+        <div class="card" id="interview-session">
+            <h3>Interview session</h3>
+            <p class="muted">Your interview will appear here.</p>
+        </div>
+
+        <div class="card">
+            <h3>Interview history</h3>
+            ${data.interviewHistory.length
+                ? data.interviewHistory.slice(-10).reverse().map(item => `
+                    <div class="list-item">
+                        <div class="item-title">${escapeHTML(item.skill)}</div>
+                        <div class="item-subtitle">${escapeHTML(item.date)}</div>
+                    </div>
+                `).join("")
+                : '<p class="muted">No interviews recorded yet.</p>'}
+        </div>
+    `;
+}
+
+/* ==========================================
+   CAREER READINESS
+========================================== */
+
+function renderCareer() {
+    const p = data.profile;
+
+    const checklist = [
+        ["Profile completed", !!p.name && !!p.education],
+        ["Skills added", p.skills.length > 0],
+        ["Learning path started", data.skills.length > 0],
+        ["Project experience recorded", !!data.resume.projects],
+        ["Career target selected", !!p.target]
+    ];
+
+    const score = Math.round(
+        checklist.filter(item => item[1]).length /
+        checklist.length * 100
+    );
+
+    return `
+        <div class="page-intro">
+            <h2>Career Readiness</h2>
+            <p class="muted">
+                Review the preparation steps for your target career.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Career preparation score</h3>
+            <strong style="font-size:36px">${score}%</strong>
+
+            <div class="progress-track">
+                <div class="progress-fill" style="width:${score}%"></div>
+            </div>
+
+            <p class="muted small">
+                This is a checklist completion score, not a job placement prediction.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Your preparation checklist</h3>
+            ${checklist.map(item => `
+                <div class="list-item">
+                    <span class="item-title">${item[0]}</span>
+                    <span>${item[1] ? "✓ Complete" : "○ Pending"}</span>
+                </div>
+            `).join("")}
+        </div>
+
+        <div class="card">
+            <h3>Your target role</h3>
+            <p>${escapeHTML(p.target || "Not selected yet")}</p>
+            <p class="muted small">
+                Add your target role and skills in My Profile.
+            </p>
+        </div>
+    `;
+}
+
+/* ==========================================
+   SMART RESUME
+========================================== */
+
+function renderResume() {
+    const r = data.resume;
+    const p = data.profile;
+
+    return `
+        <div class="page-intro">
+            <h2>Smart Resume</h2>
+            <p class="muted">
+                Maintain your professional information.
+            </p>
+        </div>
+
+        <form id="resume-form" class="card">
+
+            <div class="field">
+                <label>Career objective</label>
+                <textarea name="objective"
+                    placeholder="Write your professional objective">${escapeHTML(r.objective)}</textarea>
+            </div>
+
+            <div class="field">
+                <label>Projects</label>
+                <textarea name="projects"
+                    placeholder="Mention your projects and contributions">${escapeHTML(r.projects)}</textarea>
+            </div>
+
+            <div class="field">
+                <label>Experience</label>
+                <textarea name="experience"
+                    placeholder="Internship or work experience">${escapeHTML(r.experience)}</textarea>
+            </div>
+
+            <div class="field">
+                <label>Education</label>
+                <textarea name="education"
+                    placeholder="Your education">${escapeHTML(r.education)}</textarea>
+            </div>
+
+            <button class="btn btn-primary">Save resume</button>
+            <button type="button" class="btn"
+                onclick="downloadResume()">Download resume</button>
+        </form>
+
+        <div class="card">
+            <h3>Resume preview</h3>
+            <h2>${escapeHTML(p.name || "Your Name")}</h2>
+            <p class="muted">${escapeHTML(p.email)}</p>
+            <p>${escapeHTML(r.objective)}</p>
+            <h3>Skills</h3>
+            <p>${escapeHTML(p.skills.join(", "))}</p>
+            <h3>Projects</h3>
+            <p>${escapeHTML(r.projects)}</p>
+            <h3>Experience</h3>
+            <p>${escapeHTML(r.experience)}</p>
+            <h3>Education</h3>
+            <p>${escapeHTML(r.education || p.education)}</p>
+        </div>
+    `;
+}
+
+function downloadResume() {
+    const p = data.profile;
+    const r = data.resume;
+
+    const content = `
+${p.name}
+${p.email}
+
+CAREER OBJECTIVE
+${r.objective}
+
+EDUCATION
+${r.education || p.education}
+
+SKILLS
+${p.skills.join(", ")}
+
+PROJECTS
+${r.projects}
+
+EXPERIENCE
+${r.experience}
+`;
+
+    const blob = new Blob([content], {
+        type: "text/plain;charset=utf-8"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "ROSCOE-Resume.txt";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+/* ==========================================
+   LIFE PLANNER
+========================================== */
+
+function renderPlanner() {
+    return `
+        <div class="page-intro">
+            <h2>Life Planner</h2>
+            <p class="muted">
+                Organize your day and track your progress.
+            </p>
+        </div>
+
+        <form id="task-form" class="card">
+            <div class="field">
+                <label>Task name</label>
+                <input name="title" required
+                    placeholder="What do you want to complete?">
+            </div>
+
+            <div class="field">
+                <label>Due date</label>
+                <input name="date" type="date">
+            </div>
+
+            <button class="btn btn-primary">Add task</button>
+        </form>
+
+        <div class="card">
+            <h3>Your tasks</h3>
+
+            <div class="item-list">
+                ${data.tasks.length
+                    ? data.tasks.map((task,index) => `
+                        <div class="list-item ${task.done ? "done" : ""}">
+                            <div>
+                                <div class="item-title">${escapeHTML(task.title)}</div>
+                                <div class="item-subtitle">
+                                    ${escapeHTML(task.date || "No deadline")}
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                onclick="toggleTask(${index})">
+                                ${task.done ? "Undo" : "Complete"}
+                            </button>
+                        </div>
+                    `).join("")
+                    : '<div class="empty-state">Your planner is empty.</div>'}
+            </div>
+        </div>
+    `;
+}
+
+function toggleTask(index) {
+    data.tasks[index].done = !data.tasks[index].done;
+    saveData();
+    renderPage();
+}
+
+/* ==========================================
+   SETTINGS
+========================================== */
+
+function renderSettings() {
+    return `
+        <div class="page-intro">
+            <h2>Settings</h2>
+            <p class="muted">
+                Manage your local data and preferences.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Voice assistant</h3>
+            <p class="muted">
+                Enable microphone access once per browser session.
+                Say Hello ROSCOE to activate the assistant.
+            </p>
+
+            <div class="button-row">
+                <button class="btn btn-primary"
+                    onclick="enableVoice()">
+                    Enable voice
+                </button>
+
+                <button class="btn"
+                    onclick="disableVoice()">
+                    Turn voice off
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Data & privacy</h3>
+            <p class="muted small">
+                Your profile, tasks, learning records and chat history
+                are saved in this browser using localStorage.
+                They are not automatically synchronized to other devices.
+            </p>
+
+            <div class="button-row">
+                <button class="btn" onclick="exportData()">
+                    Export my data
+                </button>
+
+                <button class="btn btn-danger" onclick="resetData()">
+                    Reset all data
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>About ROSCOE</h3>
+            <p class="muted">
+                ROSCOE is your personal life and career companion,
+                powered by a connected AI model.
+            </p>
+            <span class="tag">ROSCOE V3.0</span>
+        </div>
+    `;
+}
+
+/* ==========================================
+   PAGE RENDERER
+========================================== */
+
+function renderPage() {
+    const content = $("#app-content");
+
+    const renderers = {
+        dashboard: renderDashboard,
+        profile: renderProfile,
+        challenges: renderChallenges,
+        learning: renderLearning,
+        interview: renderInterview,
+        career: renderCareer,
+        resume: renderResume,
+        planner: renderPlanner,
+        settings: renderSettings
+    };
+
+    content.innerHTML = renderers[currentPage]();
+}
+
+/* ==========================================
+   FORM HANDLERS
+========================================== */
+
+document.addEventListener("click", event => {
+    const nav = event.target.closest("[data-page]");
+
+    if (nav) navigate(nav.dataset.page);
+});
+
+document.addEventListener("submit", async event => {
+    const form = event.target;
+
+    if (form.id === "profile-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.profile = {
+            name: fd.get("name").trim(),
+            email: fd.get("email").trim(),
+            education: fd.get("education").trim(),
+            target: fd.get("target").trim(),
+            skills: fd.get("skills")
+                .split(",")
+                .map(s => s.trim())
+                .filter(Boolean),
+            goals: fd.get("goals").trim(),
+            bio: fd.get("bio").trim()
+        };
+
+        saveData();
+        renderPage();
+        roscoeSay("Your profile has been saved.");
     }
 
-    .sidebar {
-        min-height: auto;
-        padding: 18px;
+    if (form.id === "challenge-form") {
+        event.preventDefault();
+
+        const title = new FormData(form).get("title").trim();
+
+        if (!title) return;
+
+        data.challenges.push({
+            title,
+            done: false
+        });
+
+        saveData();
+        renderPage();
     }
 
-    #navigation {
-        grid-template-columns: repeat(2,minmax(0,1fr));
+    if (form.id === "skill-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.skills.push({
+            name: fd.get("skill").trim(),
+            level: fd.get("level"),
+            learned: false
+        });
+
+        saveData();
+        renderPage();
     }
 
-    .nav-heading {
-        margin-top: 22px;
+    if (form.id === "task-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.tasks.push({
+            title: fd.get("title").trim(),
+            date: fd.get("date"),
+            done: false
+        });
+
+        saveData();
+        renderPage();
     }
 
-    .sidebar-bottom {
-        display: none;
+    if (form.id === "resume-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.resume = {
+            objective: fd.get("objective"),
+            projects: fd.get("projects"),
+            experience: fd.get("experience"),
+            education: fd.get("education")
+        };
+
+        saveData();
+        renderPage();
+        roscoeSay("Your resume information has been saved.");
     }
 
-    .main-area {
-        padding: 23px 16px;
+    if (form.id === "interview-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        const skill = fd.get("skill").trim();
+        const level = fd.get("level");
+        const type = fd.get("type");
+
+        if (!skill) return;
+
+        const session = {
+            skill,
+            level,
+            type,
+            date: new Date().toLocaleDateString()
+        };
+
+        data.interviewHistory.push(session);
+        saveData();
+
+        const sessionBox = $("#interview-session");
+
+        sessionBox.innerHTML = `
+            <h3>Interview started: ${escapeHTML(skill)}</h3>
+            <p class="muted">
+                ${escapeHTML(level)} · ${escapeHTML(type)}
+            </p>
+            <p class="muted">
+                ROSCOE is preparing your first question...
+            </p>
+        `;
+
+        const prompt = `
+Start a ${level} level ${type} interview on ${skill}.
+Ask one question at a time.
+Wait for my answer, evaluate it, explain mistakes,
+and continue with a relevant next question.
+Start with the first question now.
+`;
+
+        await sendToAI(prompt);
     }
 
-    .topbar h1 {
-        font-size: 27px;
-    }
+    if (form.id === "roscoe-chat-form") {
+        event.preventDefault();
+        const input = $("#roscoe-chat-input");
+        const message = input.value.trim();
 
-    .date-label {
-        display: none;
-    }
+        if (!message) return;
 
-    .hero-card {
-        padding: 23px;
+        input.value = "";
+        await sendToAI(message);
     }
+});
 
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
+/* ==========================================
+   AI CONVERSATION
+========================================== */
 
-    .workspace-grid,
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
+function getAIHistory() {
+    return data.chatHistory.slice(-12).map(item => ({
+        role: "user",
+        text: item.message
+    })).flat();
+}
 
-    .roscoe-companion {
-        padding: 22px;
-    }
+async function sendToAI(message, options = {}) {
+    const bot = $("#bot-message");
 
-    .main-footer {
-        flex-direction: column;
+    if (!message) return;
+
+    bot.textContent = "You: " + message;
+
+    setAvatarState("thinking", "ROSCOE IS THINKING");
+
+    try {
+        const history = data.chatHistory.slice(-12).flatMap(item => [
+            { role: "user", text: item.message },
+            { role: "assistant", text: item.reply }
+        ]);
+
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message,
+                profile: data.profile,
+                history
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "AI request failed.");
+        }
+
+        const reply = result.reply;
+
+        if (!reply) throw new Error("Empty AI response.");
+
+        data.chatHistory.push({
+            message,
+            reply,
+            timestamp: new Date().toISOString()
+        });
+
+        data.chatHistory = data.chatHistory.slice(-50);
+
+        saveData();
+
+        roscoeSay(reply);
+
+        if (voiceState.enabled && !voiceState.muted) {
+            await speak(reply);
+        } else {
+            setAvatarState("idle", "AI COMPANION ACTIVE");
+        }
+
+        return reply;
+
+    } catch (error) {
+        console.error("ROSCOE AI:", error);
+
+        const message =
+            "I couldn't connect to my AI service. " +
+            "Please check that the ROSCOE server is running and your API key is configured.";
+
+        roscoeSay(message);
+
+        setAvatarState("idle", "AI CONNECTION ERROR");
+
+        return null;
     }
 }
+
+/* ==========================================
+   COMPANION QUICK ACTIONS
+========================================== */
+
+function roscoeSay(message) {
+    const box = $("#bot-message");
+
+    if (box) box.textContent = message;
+}
+
+function roscoeReply(type) {
+    const prompts = {
+        motivation: "Motivate me with practical advice based on my goals.",
+        challenge: "Give me a new useful daily challenge based on my skills.",
+        career: "Give me personalized career guidance based on my profile."
+    };
+
+    sendToAI(prompts[type] || "How can you help me today?");
+}
+
+/* ==========================================
+   AVATAR STATE
+========================================== */
+
+function setAvatarState(state, label) {
+    const avatar = $("#roscoe-avatar");
+    const status = $("#avatar-state");
+
+    if (avatar) {
+        avatar.classList.remove(
+            "speaking",
+            "thinking",
+            "listening"
+        );
+
+        if (state !== "idle") {
+            avatar.classList.add(state);
+        }
+    }
+
+    if (status) status.textContent = label;
+}
+
+/* ==========================================
+   VOICE ASSISTANT
+========================================== */
+
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+const voiceState = {
+    enabled: false,
+    awake: false,
+    busy: false,
+    speaking: false,
+    muted: false,
+    running: false,
+    recognition: null,
+    restartTimer: null,
+    sleepTimer: null,
+    voices: []
+};
+
+function updateVoiceUI() {
+    const button = $("#voice-toggle");
+
+    if (button) {
+        button.textContent = voiceState.enabled
+            ? "🎙 Voice ON"
+            : "🎙 Enable voice";
+
+        button.classList.toggle("active", voiceState.enabled);
+    }
+
+    const mute = $("#voice-mute");
+
+    if (mute) {
+        mute.textContent = voiceState.muted
+            ? "🔇 Unmute"
+            : "🔊 Mute";
+    }
+}
+
+function setVoiceStatus(message, mode = "") {
+    const text = $("#voice-status-text");
+    const status = $("#voice-status");
+
+    if (text) text.textContent = message;
+
+    if (status) {
+        status.className = "voice-status " + mode;
+    }
+}
+
+function loadSpeechVoices() {
+    if (!window.speechSynthesis) return;
+
+    voiceState.voices = window.speechSynthesis.getVoices();
+}
+
+if (window.speechSynthesis) {
+    loadSpeechVoices();
+    window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+}
+
+/* Select an available voice. Actual voice gender depends on the OS. */
+
+function chooseVoice(text) {
+    const isHindi = /[\u0900-\u097F]/.test(text);
+
+    const voices = voiceState.voices;
+
+    if (isHindi) {
+        return voices.find(v => /hi-IN/i.test(v.lang));
+    }
+
+    return voices.find(v =>
+        /female|zira|samantha|aria|jenny|neerja/i.test(v.name)
+    ) || voices.find(v => /en-IN/i.test(v.lang));
+}
+
+/* TEXT TO SPEECH */
+
+function speak(text) {
+    return new Promise(resolve => {
+        if (!window.speechSynthesis || voiceState.muted) {
+            resolve();
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        voiceState.speaking = true;
+
+        if (voiceState.recognition && voiceState.running) {
+            try {
+                voiceState.recognition.stop();
+            } catch {}
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        const voice = chooseVoice(text);
+
+        if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang;
+        } else {
+            utterance.lang = /[\u0900-\u097F]/.test(text)
+                ? "hi-IN"
+                : "en-IN";
+        }
+
+        utterance.rate = 1;
+        utterance.pitch = 1.05;
+        utterance.volume = 1;
+
+        setAvatarState("speaking", "ROSCOE IS SPEAKING");
+        setVoiceStatus("ROSCOE is speaking...", "speaking");
+
+        function finished() {
+            voiceState.speaking = false;
+            setAvatarState("idle", "AI COMPANION ACTIVE");
+            resolve();
+
+            if (voiceState.enabled) {
+                setTimeout(startRecognition, 500);
+            }
+        }
+
+        utterance.onend = finished;
+        utterance.onerror = finished;
+
+        window.speechSynthesis.speak(utterance);
+    });
+}
+
+/* SPEECH RECOGNITION */
+
+function createRecognition() {
+    if (!SpeechRecognition) return false;
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+        voiceState.running = true;
+
+        if (!voiceState.busy && !voiceState.speaking) {
+            setVoiceStatus(
+                voiceState.awake
+                    ? "Listening to your message..."
+                    : 'Listening for "Hello ROSCOE"...',
+                "listening"
+            );
+
+            setAvatarState("listening", "LISTENING");
+        }
+    };
+
+    recognition.onresult = event => {
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+            if (!event.results[i].isFinal) continue;
+
+            const transcript =
+                event.results[i][0].transcript.trim();
+
+            if (transcript) handleVoiceInput(transcript);
+        }
+    };
+
+    recognition.onerror = event => {
+        console.warn("Speech recognition:", event.error);
+
+        if (event.error === "not-allowed" ||
+            event.error === "service-not-allowed") {
+
+            voiceState.enabled = false;
+            updateVoiceUI();
+
+            setVoiceStatus(
+                "Microphone permission denied.",
+                "error"
+            );
+        }
+    };
+
+    recognition.onend = () => {
+        voiceState.running = false;
+
+        if (voiceState.enabled &&
+            !voiceState.speaking &&
+            !voiceState.busy) {
+
+            clearTimeout(voiceState.restartTimer);
+
+            voiceState.restartTimer = setTimeout(
+                startRecognition,
+                700
+            );
+        }
+    };
+
+    voiceState.recognition = recognition;
+
+    return true;
+}
+
+function startRecognition() {
+    if (!voiceState.enabled ||
+        !voiceState.recognition ||
+        voiceState.running ||
+        voiceState.busy ||
+        voiceState.speaking) {
+        return;
+    }
+
+    try {
+        voiceState.recognition.start();
+    } catch (error) {
+        console.warn("Recognition restart:", error);
+    }
+}
+
+/* WAKE WORD HANDLER */
+
+function wakeRoscoe(command = "") {
+    voiceState.awake = true;
+
+    clearTimeout(voiceState.sleepTimer);
+
+    voiceState.sleepTimer = setTimeout(() => {
+        voiceState.awake = false;
+
+        if (voiceState.enabled) {
+            setVoiceStatus(
+                'Listening for "Hello ROSCOE"...',
+                "listening"
+            );
+        }
+    }, 60000);
+
+    if (command) {
+        speak("Hey Boss!").then(() => sendToAI(command));
+    } else {
+        speak("Hey Boss! How can I help you?");
+    }
+}
+
+function handleVoiceInput(transcript) {
+    const wakePattern = /\bhello\s+roscoe\b/i;
+
+    if (!voiceState.awake) {
+        const match = transcript.match(wakePattern);
+
+        if (!match) return;
+
+        const command = transcript
+            .replace(wakePattern, "")
+            .replace(/^[,.\s]+/, "")
+            .trim();
+
+        wakeRoscoe(command);
+        return;
+    }
+
+    clearTimeout(voiceState.sleepTimer);
+
+    voiceState.sleepTimer = setTimeout(() => {
+        voiceState.awake = false;
+    }, 60000);
+
+    sendToAI(transcript);
+}
+
+/* ENABLE / DISABLE MICROPHONE */
+
+async function enableVoice() {
+    if (!SpeechRecognition) {
+        setVoiceStatus(
+            "Speech recognition needs a supported Chrome or Edge browser.",
+            "error"
+        );
+        return;
+    }
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia ||
+        !window.isSecureContext) {
+        setVoiceStatus(
+            "Use localhost or HTTPS and allow microphone access.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+
+        stream.getTracks().forEach(track => track.stop());
+
+        if (!voiceState.recognition && !createRecognition()) {
+            throw new Error("Speech recognition unavailable.");
+        }
+
+        voiceState.enabled = true;
+        voiceState.awake = false;
+
+        updateVoiceUI();
+
+        setVoiceStatus(
+            'Voice ready. Say "Hello ROSCOE".',
+            "listening"
+        );
+
+        startRecognition();
+
+    } catch (error) {
+        console.error(error);
+
+        setVoiceStatus(
+            "Please allow microphone access in browser settings.",
+            "error"
+        );
+    }
+}
+
+function disableVoice() {
+    voiceState.enabled = false;
+    voiceState.awake = false;
+
+    clearTimeout(voiceState.restartTimer);
+    clearTimeout(voiceState.sleepTimer);
+
+    if (voiceState.recognition) {
+        try {
+            voiceState.recognition.stop();
+        } catch {}
+    }
+
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+
+    voiceState.speaking = false;
+
+    updateVoiceUI();
+    setVoiceStatus("Voice assistant is turned off.");
+    setAvatarState("idle", "AI COMPANION ACTIVE");
+}
+
+/* MUTE VOICE OUTPUT */
+
+function toggleMute() {
+    voiceState.muted = !voiceState.muted;
+
+    if (voiceState.muted) {
+        window.speechSynthesis.cancel();
+        voiceState.speaking = false;
+    }
+
+    updateVoiceUI();
+}
+
+/* ==========================================
+   EXPORT AND RESET
+========================================== */
+
+function exportData() {
+    const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "roscoe-data.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function resetData() {
+    if (!confirm("Delete all ROSCOE data from this browser?")) {
+        return;
+    }
+
+    data = clone(defaultData);
+
+    saveData();
+    navigate("dashboard");
+
+    roscoeSay("Your local data has been reset.");
+}
+
+/* ==========================================
+   INITIALIZE APPLICATION
+========================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+    showDate();
+
+    renderPage();
+
+    const toggle = $("#voice-toggle");
+    const mute = $("#voice-mute");
+
+    if (toggle) {
+        toggle.addEventListener("click", enableVoice);
+    }
+
+    if (mute) {
+        mute.addEventListener("click", toggleMute);
+    }
+
+    updateVoiceUI();
+
+    fetch("/api/health")
+        .then(response => response.json())
+        .then(result => {
+            if (!result.ai_configured) {
+                setVoiceStatus(
+                    "AI API key not configured. Voice can listen, but AI replies need setup.",
+                    "error"
+                );
+            }
+        })
+        .catch(() => {
+            roscoeSay(
+                "ROSCOE is open, but the AI server is not connected. Start server.py."
+            );
+        });
+});
+
+/* Expose functions used by HTML buttons. */
+
+window.navigate = navigate;
+window.roscoeSay = roscoeSay;
+window.roscoeReply = roscoeReply;
+window.toggleTask = toggleTask;
+window.toggleSkill = toggleSkill;
+window.toggleChallenge = toggleChallenge;
+window.downloadResume = downloadResume;
+window.exportData = exportData;
+window.resetData = resetData;
+window.enableVoice = enableVoice;
+window.disableVoice = disableVoice;
