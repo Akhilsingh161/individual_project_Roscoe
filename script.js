@@ -1,1022 +1,1587 @@
 
-const $ = (selector) => document.querySelector(selector);
+"use strict";
 
-const pageTitles = {
-  dashboard: "Dashboard",
-  profile: "My Profile",
-  challenges: "Daily Challenges",
-  learning: "Learning Path",
-  interview: "Interview Arena",
-  career: "Career Readiness",
-  resume: "Smart Resume",
-  planner: "Life Planner",
-  settings: "Settings"
-};
+/* ==========================================
+   ROSCOE V3 - COMPLETE APPLICATION
+========================================== */
+
+const $ = selector => document.querySelector(selector);
+
+const STORAGE_KEY = "roscoeAppDataV3";
 
 const defaultData = {
-  profile: {
-    name: "User",
-    role: "AI & ML Student",
-    skills: "Python, HTML, CSS, JavaScript",
-    goals: "Become an AI/ML engineer",
-    interests: "Artificial Intelligence, Web Development",
-    target: "AI/ML Engineer"
-  },
-  tasks: [
-    { id: 1, title: "Practice Python for 30 minutes", category: "Learning", done: false },
-    { id: 2, title: "Solve one coding problem", category: "Practice", done: false },
-    { id: 3, title: "Learn one new AI/ML concept", category: "Growth", done: false },
-    { id: 4, title: "Review today's progress", category: "Personal", done: false }
-  ],
-  challengesDone: 0,
-  learnedSkills: [],
-  resumeMode: "approval",
-  reminder: "Practice coding every day",
-  chatHistory: []
+    profile: {
+        name: "",
+        email: "",
+        education: "",
+        skills: [],
+        goals: "",
+        target: "",
+        bio: ""
+    },
+
+    tasks: [],
+
+    challenges: [],
+
+    skills: [],
+
+    planner: [],
+
+    resume: {
+        objective: "",
+        projects: "",
+        experience: "",
+        education: ""
+    },
+
+    chatHistory: [],
+
+    interviewHistory: []
 };
-
-function loadData() {
-  try {
-    const saved = localStorage.getItem("roscoeAppData");
-    if (!saved) return structuredClone(defaultData);
-
-    const parsed = JSON.parse(saved);
-
-    return {
-      ...structuredClone(defaultData),
-      ...parsed,
-      profile: { ...defaultData.profile, ...(parsed.profile || {}) },
-      tasks: Array.isArray(parsed.tasks) ? parsed.tasks : structuredClone(defaultData.tasks),
-      learnedSkills: Array.isArray(parsed.learnedSkills) ? parsed.learnedSkills : [],
-      chatHistory: Array.isArray(parsed.chatHistory) ? parsed.chatHistory : []
-    };
-  } catch {
-    return structuredClone(defaultData);
-  }
-}
 
 let data = loadData();
 let currentPage = "dashboard";
 
-function saveData() {
-  try {
-    localStorage.setItem("roscoeAppData", JSON.stringify(data));
-  } catch (error) {
-    console.warn("Browser storage is unavailable.", error);
-  }
+function clone(value) {
+    return JSON.parse(JSON.stringify(value));
 }
 
-function escapeHTML(value = "") {
-  return String(value).replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
+function loadData() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if (!saved) return clone(defaultData);
+
+        return {
+            ...clone(defaultData),
+            ...saved,
+            profile: {
+                ...defaultData.profile,
+                ...(saved.profile || {})
+            },
+            resume: {
+                ...defaultData.resume,
+                ...(saved.resume || {})
+            }
+        };
+    } catch (error) {
+        console.error("Storage error:", error);
+        return clone(defaultData);
+    }
+}
+
+function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
 }
 
 function showDate() {
-  $("#today-date").textContent = new Date().toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
+    const date = $("#today-date");
+
+    if (date) {
+        date.textContent = new Date().toLocaleDateString(
+            "en-IN",
+            {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            }
+        );
+    }
 }
 
 function navigate(page) {
-  if (!pageTitles[page]) return;
+    const validPages = [
+        "dashboard",
+        "profile",
+        "challenges",
+        "learning",
+        "interview",
+        "career",
+        "resume",
+        "planner",
+        "settings"
+    ];
 
-  currentPage = page;
+    if (!validPages.includes(page)) return;
 
-  $("#page-title").textContent = pageTitles[page];
+    currentPage = page;
 
-  document.querySelectorAll(".nav-link").forEach((button) => {
-    button.classList.toggle("active", button.dataset.page === page);
-  });
+    document.querySelectorAll(".nav-link").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.page === page
+        );
+    });
 
-  renderPage();
+    const title = page
+        .replace(/^./, char => char.toUpperCase())
+        .replace(/([A-Z])/g, " $1")
+        .trim();
+
+    $("#page-title").textContent = title;
+
+    renderPage();
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderPage() {
-  const content = $("#app-content");
-
-  const renderers = {
-    dashboard: renderDashboard,
-    profile: renderProfile,
-    challenges: renderChallenges,
-    learning: renderLearning,
-    interview: renderInterview,
-    career: renderCareer,
-    resume: renderResume,
-    planner: renderPlanner,
-    settings: renderSettings
-  };
-
-  content.innerHTML = renderers[currentPage]();
-  updateAvatar();
-}
-
-function updateAvatar() {
-  const name = data.profile.name.trim();
-  $(".avatar-button").textContent = name ? name.charAt(0).toUpperCase() : "U";
-}
-
-function getCompletion() {
-  if (!data.tasks.length) return 0;
-  return Math.round(
-    data.tasks.filter((task) => task.done).length / data.tasks.length * 100
-  );
-}
+/* ==========================================
+   DASHBOARD
+========================================== */
 
 function renderDashboard() {
-  const completed = data.tasks.filter((task) => task.done).length;
-  const total = data.tasks.length;
-  const completion = getCompletion();
-  const name = escapeHTML(data.profile.name || "User");
+    const completed = data.tasks.filter(task => task.done).length;
 
-  return `
-    <div class="hero-card">
-      <span class="tag">✦ YOUR PERSONAL GROWTH OS</span>
-      <h2>Welcome back, ${name}.<br>Let's build your next level.</h2>
-      <p>
-        Your goals, learning, career preparation and daily actions in one place.
-        Small consistent steps create meaningful progress.
-      </p>
-      <div class="button-row">
-        <button class="btn btn-primary" onclick="navigate('planner')">Open my planner ↗</button>
-        <button class="btn" onclick="navigate('learning')">Continue learning</button>
-      </div>
-    </div>
+    const totalTasks = data.tasks.length;
 
-    <div class="section-heading">
-      <div>
-        <h2>Your overview</h2>
-        <p>A quick look at your current progress.</p>
-      </div>
-    </div>
+    const learned = data.skills.filter(skill => skill.learned).length;
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">TASKS COMPLETED</div>
-        <div class="stat-value">${completed}<span class="muted">/${total}</span></div>
-        <div class="stat-note">Keep moving forward</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">LEARNING PROGRESS</div>
-        <div class="stat-value">${data.learnedSkills.length}</div>
-        <div class="stat-note">Skills marked as learned</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">DAILY CHALLENGES</div>
-        <div class="stat-value">${data.challengesDone}</div>
-        <div class="stat-note">Challenges completed</div>
-      </div>
-    </div>
+    const challengesDone =
+        data.challenges.filter(item => item.done).length;
 
-    <div class="section-heading">
-      <div>
-        <h2>Your personal workspace</h2>
-        <p>Choose what you want to work on next.</p>
-      </div>
-    </div>
+    const progress = totalTasks
+        ? Math.round(completed / totalTasks * 100)
+        : 0;
 
-    <div class="content-grid">
-      <button class="feature-card" onclick="navigate('learning')">
-        <span class="feature-icon">⌘</span>
-        <strong>Learning Studio</strong>
-        <small>Build a learning path from your current skills to your goals.</small>
-      </button>
-      <button class="feature-card" onclick="navigate('career')">
-        <span class="feature-icon">↗</span>
-        <strong>Career Navigator</strong>
-        <small>Explore your target role and identify skills to improve.</small>
-      </button>
-      <button class="feature-card" onclick="navigate('challenges')">
-        <span class="feature-icon">⚡</span>
-        <strong>Daily Challenge</strong>
-        <small>Complete a practical task and build consistency.</small>
-      </button>
-      <button class="feature-card" onclick="navigate('interview')">
-        <span class="feature-icon">◎</span>
-        <strong>Interview Arena</strong>
-        <small>Practice answering common technical interview questions.</small>
-      </button>
-    </div>
+    return `
+        <section class="hero-card">
+            <span class="tag">✦ YOUR PERSONAL GROWTH OS</span>
 
-    <div class="section-heading">
-      <div>
-        <h2>Today's action list</h2>
-        <p>Complete tasks at your own pace.</p>
-      </div>
-      <button class="btn" onclick="navigate('planner')">Manage tasks</button>
-    </div>
+            <h2>
+                Welcome back, ${escapeHTML(data.profile.name || "Boss")}.
+                <br>Let's build your next level.
+            </h2>
 
-    <div class="card">
-      <div class="stat-label">DAILY COMPLETION · ${completion}%</div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${completion}%"></div>
-      </div>
-      ${renderTaskRows()}
-    </div>
-  `;
+            <p>
+                Your goals, learning, career preparation and daily
+                actions in one place. Small consistent steps create
+                meaningful progress.
+            </p>
+
+            <div class="button-row">
+                <button class="btn btn-primary"
+                    onclick="navigate('planner')">
+                    Open my planner ↗
+                </button>
+
+                <button class="btn"
+                    onclick="navigate('learning')">
+                    Continue learning
+                </button>
+            </div>
+        </section>
+
+        <div class="section-heading">
+            <h2>Your overview</h2>
+            <p>A quick look at your current progress.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>TASKS COMPLETED</span>
+                <strong>${completed}/${totalTasks}</strong>
+                <small>${progress}% completion</small>
+            </div>
+
+            <div class="stat-card">
+                <span>LEARNING PROGRESS</span>
+                <strong>${learned}</strong>
+                <small>Skills marked as learned</small>
+            </div>
+
+            <div class="stat-card">
+                <span>DAILY CHALLENGES</span>
+                <strong>${challengesDone}</strong>
+                <small>Challenges completed</small>
+            </div>
+        </div>
+
+        <div class="section-heading">
+            <h2>Your personal workspace</h2>
+            <p>Choose what you want to work on next.</p>
+        </div>
+
+        <div class="workspace-grid">
+            ${workspaceCard("⌘","Learning Studio",
+                "Build skills and create your learning roadmap.",
+                "learning")}
+
+            ${workspaceCard("↗","Career Navigator",
+                "Understand your career readiness.",
+                "career")}
+
+            ${workspaceCard("◎","Interview Arena",
+                "Practise skill-based interview questions.",
+                "interview")}
+
+            ${workspaceCard("▦","Life Planner",
+                "Organize your daily activities.",
+                "planner")}
+
+            ${workspaceCard("▤","Smart Resume",
+                "Maintain your career information.",
+                "resume")}
+
+            ${workspaceCard("⚡","Daily Challenges",
+                "Complete useful daily missions.",
+                "challenges")}
+        </div>
+    `;
 }
 
-function renderTaskRows() {
-  if (!data.tasks.length) {
-    return `<div class="empty-state">No tasks yet. Add your first task in Life Planner.</div>`;
-  }
-
-  return data.tasks.map((task) => `
-    <div class="task-row ${task.done ? "done" : ""}">
-      <input
-        type="checkbox"
-        ${task.done ? "checked" : ""}
-        aria-label="Complete ${escapeHTML(task.title)}"
-        onchange="toggleTask(${task.id}, this.checked)"
-      >
-      <div class="task-copy">
-        <strong>${escapeHTML(task.title)}</strong>
-        <small>${escapeHTML(task.category || "Personal")}</small>
-      </div>
-      ${task.done ? '<span class="pill">Done</span>' : ""}
-    </div>
-  `).join("");
+function workspaceCard(icon, title, description, page) {
+    return `
+        <div class="workspace-card" onclick="navigate('${page}')">
+            <div class="workspace-icon">${icon}</div>
+            <h3>${title}</h3>
+            <p>${description}</p>
+        </div>
+    `;
 }
 
-function toggleTask(id, checked) {
-  const task = data.tasks.find((item) => item.id === id);
-  if (!task) return;
-
-  task.done = checked;
-  saveData();
-  renderPage();
-}
+/* ==========================================
+   PROFILE
+========================================== */
 
 function renderProfile() {
-  const profile = data.profile;
+    const p = data.profile;
 
-  return `
-    <div class="hero-card">
-      <span class="tag">♙ PERSONAL PROFILE</span>
-      <h2>Know yourself. Shape your future.</h2>
-      <p>Tell ROSCOE what you know, what you want to learn and where you want to go.</p>
-    </div>
+    return `
+        <div class="page-intro">
+            <h2>My Profile</h2>
+            <p class="muted">
+                Tell ROSCOE about your education, skills and goals.
+            </p>
+        </div>
 
-    <div class="section-heading"><h2>Your information</h2></div>
+        <form id="profile-form" class="card">
+            <div class="form-grid">
 
-    <form class="card form-grid" onsubmit="saveProfile(event)">
-      <div class="field">
-        <label for="profile-name">Your name</label>
-        <input id="profile-name" name="name" value="${escapeHTML(profile.name)}" required>
-      </div>
-      <div class="field">
-        <label for="profile-role">Current role</label>
-        <input id="profile-role" name="role" value="${escapeHTML(profile.role)}">
-      </div>
-      <div class="field full-width">
-        <label for="profile-skills">Skills you already know</label>
-        <textarea id="profile-skills" name="skills">${escapeHTML(profile.skills)}</textarea>
-      </div>
-      <div class="field full-width">
-        <label for="profile-interests">Your interests</label>
-        <input id="profile-interests" name="interests" value="${escapeHTML(profile.interests)}">
-      </div>
-      <div class="field full-width">
-        <label for="profile-goals">Your main goal</label>
-        <textarea id="profile-goals" name="goals">${escapeHTML(profile.goals)}</textarea>
-      </div>
-      <div class="field full-width">
-        <label for="profile-target">Career you want to pursue</label>
-        <input id="profile-target" name="target" value="${escapeHTML(profile.target)}">
-      </div>
-      <div class="full-width">
-        <button class="btn btn-primary" type="submit">Save my profile</button>
-      </div>
-    </form>
-  `;
+                <div class="field">
+                    <label>Full name</label>
+                    <input name="name"
+                        value="${escapeHTML(p.name)}"
+                        placeholder="Your name">
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input name="email" type="email"
+                        value="${escapeHTML(p.email)}"
+                        placeholder="Your email">
+                </div>
+
+                <div class="field">
+                    <label>Education</label>
+                    <input name="education"
+                        value="${escapeHTML(p.education)}"
+                        placeholder="B.Tech AI & ML">
+                </div>
+
+                <div class="field">
+                    <label>Target career</label>
+                    <input name="target"
+                        value="${escapeHTML(p.target)}"
+                        placeholder="AI Engineer">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Your skills (comma separated)</label>
+                <input name="skills"
+                    value="${escapeHTML(p.skills.join(", "))}"
+                    placeholder="Python, Java, Machine Learning">
+            </div>
+
+            <div class="field">
+                <label>Your goals</label>
+                <textarea name="goals"
+                    placeholder="What do you want to achieve?">${escapeHTML(p.goals)}</textarea>
+            </div>
+
+            <div class="field">
+                <label>About yourself</label>
+                <textarea name="bio"
+                    placeholder="Tell ROSCOE about yourself...">${escapeHTML(p.bio)}</textarea>
+            </div>
+
+            <button class="btn btn-primary">Save profile</button>
+        </form>
+
+        <div class="card">
+            <h3>Your saved skills</h3>
+            <div class="tag-list">
+                ${p.skills.length
+                    ? p.skills.map(s => `<span>${escapeHTML(s)}</span>`).join("")
+                    : "<span>No skills added yet</span>"}
+            </div>
+        </div>
+    `;
 }
 
-function saveProfile(event) {
-  event.preventDefault();
-  const form = new FormData(event.target);
-
-  data.profile = {
-    name: String(form.get("name") || "User").trim(),
-    role: String(form.get("role") || "").trim(),
-    skills: String(form.get("skills") || "").trim(),
-    interests: String(form.get("interests") || "").trim(),
-    goals: String(form.get("goals") || "").trim(),
-    target: String(form.get("target") || "").trim()
-  };
-
-  saveData();
-  renderPage();
-  roscoeSay("Your profile has been saved. I'll use these details in this frontend demo to personalize the suggestions.");
-}
-
-const challenges = [
-  {
-    title: "The 25-Minute Focus Sprint",
-    description: "Choose one topic and study it for 25 minutes without switching tasks.",
-    category: "Productivity"
-  },
-  {
-    title: "Explain It Simply",
-    description: "Pick one technical concept and explain it in five sentences as if teaching a beginner.",
-    category: "Communication"
-  },
-  {
-    title: "Solve One Problem",
-    description: "Solve one beginner coding problem. Test your answer with at least three inputs.",
-    category: "Coding"
-  },
-  {
-    title: "Build Something Small",
-    description: "Create a small improvement in one of your projects and write down what you learned.",
-    category: "Building"
-  },
-  {
-    title: "Career Research",
-    description: "Read one job description in your target field and list three required skills.",
-    category: "Career"
-  }
-];
-
-function todayChallengeIndex() {
-  const date = new Date();
-  return (date.getFullYear() * 367 + date.getMonth() * 31 + date.getDate()) % challenges.length;
-}
+/* ==========================================
+   DAILY CHALLENGES
+========================================== */
 
 function renderChallenges() {
-  const challenge = challenges[todayChallengeIndex()];
-
-  return `
-    <div class="hero-card">
-      <span class="tag">⚡ YOUR DAILY MISSION</span>
-      <h2>Challenge yourself, one step at a time.</h2>
-      <p>Consistency matters more than perfection. Complete the mission and keep building your skills.</p>
-    </div>
-
-    <div class="section-heading"><h2>Today's challenge</h2></div>
-
-    <div class="card">
-      <span class="tag">${escapeHTML(challenge.category)}</span>
-      <h2 style="margin-top:15px">${escapeHTML(challenge.title)}</h2>
-      <p class="muted small">${escapeHTML(challenge.description)}</p>
-      <div class="button-row">
-        <button class="btn btn-primary" onclick="completeChallenge()">✓ Mark challenge complete</button>
-        <button class="btn" onclick="roscoeSay('Start small. Set a timer, remove distractions, and focus on finishing the challenge rather than making it perfect.')">Get a tip</button>
-      </div>
-      <div class="result-box">
-        <h3>Your progress</h3>
-        <p>Challenges completed: <strong>${data.challengesDone}</strong></p>
-      </div>
-    </div>
-
-    <div class="section-heading"><h2>More ways to grow</h2></div>
-    <div class="content-grid">
-      ${challenges.map((item) => `
-        <div class="feature-card">
-          <span class="feature-icon">✦</span>
-          <strong>${escapeHTML(item.title)}</strong>
-          <small>${escapeHTML(item.description)}</small>
+    return `
+        <div class="page-intro">
+            <h2>Daily Challenges</h2>
+            <p class="muted">
+                Build consistency through small practical missions.
+            </p>
         </div>
-      `).join("")}
-    </div>
-  `;
+
+        <form id="challenge-form" class="card">
+            <div class="field">
+                <label>New challenge</label>
+                <input name="title" required
+                    placeholder="Example: Practise Python for 30 minutes">
+            </div>
+            <button class="btn btn-primary">Add challenge</button>
+        </form>
+
+        <div class="card">
+            <h3>Your challenges</h3>
+            <div class="item-list">
+                ${data.challenges.length
+                    ? data.challenges.map((item,index) => `
+                        <div class="list-item ${item.done ? "done" : ""}">
+                            <div>
+                                <div class="item-title">${escapeHTML(item.title)}</div>
+                                <div class="item-subtitle">
+                                    ${item.done ? "Completed" : "Pending"}
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                onclick="toggleChallenge(${index})">
+                                ${item.done ? "Undo" : "Complete"}
+                            </button>
+                        </div>
+                    `).join("")
+                    : '<div class="empty-state">No challenges yet. Add your first mission.</div>'}
+            </div>
+        </div>
+    `;
 }
 
-function completeChallenge() {
-  data.challengesDone += 1;
-  saveData();
-  renderPage();
-  roscoeSay("Challenge completed! Take a moment to notice what you learned. Then choose your next small step.");
+function toggleChallenge(index) {
+    data.challenges[index].done = !data.challenges[index].done;
+    saveData();
+    renderPage();
 }
+
+/* ==========================================
+   LEARNING PATH
+========================================== */
 
 function renderLearning() {
-  const known = data.profile.skills
-    .split(",")
-    .map((skill) => skill.trim())
-    .filter(Boolean);
+    const learned = data.skills.filter(s => s.learned).length;
 
-  const roadmap = [
-    {
-      title: "Stage 1 · Strengthen fundamentals",
-      text: "Review programming fundamentals, problem solving, functions, data structures and basic debugging."
-    },
-    {
-      title: "Stage 2 · Build practical projects",
-      text: "Create small projects, practise JavaScript or Python, use Git and document your work."
-    },
-    {
-      title: "Stage 3 · Learn your target specialization",
-      text: "For AI/ML, study statistics, NumPy, pandas, data preparation, model evaluation and introductory machine learning."
-    },
-    {
-      title: "Stage 4 · Demonstrate your skills",
-      text: "Build a portfolio, write project READMEs, solve interview questions and review your progress weekly."
-    }
-  ];
+    const percent = data.skills.length
+        ? Math.round(learned / data.skills.length * 100)
+        : 0;
 
-  return `
-    <div class="hero-card">
-      <span class="tag">⌘ LEARNING STUDIO</span>
-      <h2>Your skills. Your roadmap.</h2>
-      <p>Start from what you know and follow a practical sequence toward your target.</p>
-    </div>
-
-    <div class="section-heading"><h2>Your current starting point</h2></div>
-    <div class="card">
-      <p class="muted small">Skills listed in your profile</p>
-      <div class="button-row">
-        ${known.length
-          ? known.map((skill) => `<span class="tag">${escapeHTML(skill)}</span>`).join("")
-          : '<span class="muted small">Add your skills in My Profile.</span>'}
-      </div>
-      <p class="muted small" style="margin-top:18px">Your goal: <strong>${escapeHTML(data.profile.goals || "Set a goal in your profile")}</strong></p>
-    </div>
-
-    <div class="section-heading">
-      <div><h2>Suggested learning roadmap</h2><p>Adapt these stages to your own pace.</p></div>
-    </div>
-
-    <div class="card">
-      ${roadmap.map((stage, index) => `
-        <div class="task-row">
-          <div class="feature-icon">${index + 1}</div>
-          <div class="task-copy">
-            <strong>${escapeHTML(stage.title)}</strong>
-            <small>${escapeHTML(stage.text)}</small>
-          </div>
+    return `
+        <div class="page-intro">
+            <h2>Learning Path</h2>
+            <p class="muted">
+                Track your current skills and the skills you want to learn.
+            </p>
         </div>
-      `).join("")}
-    </div>
 
-    <div class="section-heading"><h2>Record a new skill</h2></div>
-    <form class="card" onsubmit="addSkill(event)">
-      <div class="field">
-        <label for="new-skill">What have you learned?</label>
-        <input id="new-skill" name="skill" placeholder="e.g. Python functions" required>
-      </div>
-      <div class="button-row">
-        <button class="btn btn-primary" type="submit">Add to my progress</button>
-      </div>
-    </form>
+        <div class="card">
+            <h3>Your learning progress</h3>
+            <strong>${percent}%</strong>
+            <div class="progress-track">
+                <div class="progress-fill" style="width:${percent}%"></div>
+            </div>
+            <p class="muted small">
+                ${learned} of ${data.skills.length} skills completed
+            </p>
+        </div>
 
-    <div class="section-heading"><h2>Skills you've recorded</h2></div>
-    <div class="card">
-      ${data.learnedSkills.length
-        ? data.learnedSkills.map((skill, index) => `
-          <div class="task-row">
-            <div class="task-copy"><strong>${escapeHTML(skill)}</strong><small>Added to your learning record</small></div>
-            <button class="btn btn-danger" onclick="removeSkill(${index})">Remove</button>
-          </div>
-        `).join("")
-        : '<div class="empty-state">Your learned skills will appear here.</div>'}
-    </div>
-  `;
+        <form id="skill-form" class="card">
+            <div class="field">
+                <label>Skill name</label>
+                <input name="skill" required
+                    placeholder="Python, SQL, Machine Learning...">
+            </div>
+            <div class="field">
+                <label>Learning level</label>
+                <select name="level">
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                </select>
+            </div>
+            <button class="btn btn-primary">Add skill</button>
+        </form>
+
+        <div class="card">
+            <h3>Your skills</h3>
+            <div class="item-list">
+                ${data.skills.length
+                    ? data.skills.map((skill,index) => `
+                        <div class="list-item ${skill.learned ? "done" : ""}">
+                            <div>
+                                <div class="item-title">${escapeHTML(skill.name)}</div>
+                                <div class="item-subtitle">
+                                    ${escapeHTML(skill.level)}
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                onclick="toggleSkill(${index})">
+                                ${skill.learned ? "Learned" : "Mark learned"}
+                            </button>
+                        </div>
+                    `).join("")
+                    : '<div class="empty-state">Add your first skill to begin.</div>'}
+            </div>
+        </div>
+    `;
 }
 
-function addSkill(event) {
-  event.preventDefault();
-  const form = new FormData(event.target);
-  const skill = String(form.get("skill") || "").trim();
-
-  if (!skill) return;
-
-  data.learnedSkills.push(skill);
-  saveData();
-  renderPage();
-  roscoeSay(`Nice progress! I've added "${skill}" to your local learning record. You can also update your resume with it.`);
+function toggleSkill(index) {
+    data.skills[index].learned = !data.skills[index].learned;
+    saveData();
+    renderPage();
 }
 
-function removeSkill(index) {
-  data.learnedSkills.splice(index, 1);
-  saveData();
-  renderPage();
-}
-
-const interviewQuestions = [
-  {
-    question: "What is the difference between a list and a tuple in Python?",
-    points: ["Mutability", "Syntax", "A suitable use case"]
-  },
-  {
-    question: "Explain supervised and unsupervised learning.",
-    points: ["Labeled versus unlabeled data", "Learning objective", "One example of each"]
-  },
-  {
-    question: "What is overfitting in machine learning?",
-    points: ["Performance on training data", "Generalization to unseen data", "Ways to reduce overfitting"]
-  },
-  {
-    question: "How would you explain one of your projects to an interviewer?",
-    points: ["Problem being solved", "Your contribution and tools", "Outcome and lessons learned"]
-  }
-];
+/* ==========================================
+   INTERVIEW ARENA
+========================================== */
 
 function renderInterview() {
-  return `
-    <div class="hero-card">
-      <span class="tag">◎ INTERVIEW ARENA</span>
-      <h2>Practise before the real interview.</h2>
-      <p>Generate a practice question, write your answer and evaluate it against a simple checklist.</p>
-    </div>
-
-    <div class="section-heading"><h2>Practice session</h2></div>
-    <div class="card">
-      <div id="interview-question">
-        <span class="tag">QUESTION</span>
-        <h3 style="margin-top:14px">Select a question to begin.</h3>
-      </div>
-
-      <form onsubmit="evaluateInterview(event)" style="margin-top:18px">
-        <div class="field">
-          <label for="interview-answer">Your answer</label>
-          <textarea id="interview-answer" placeholder="Write your answer here..." required></textarea>
+    return `
+        <div class="page-intro">
+            <h2>Interview Arena</h2>
+            <p class="muted">
+                Practise interviews based on the exact skill you choose.
+            </p>
         </div>
-        <div class="button-row">
-          <button class="btn btn-primary" type="submit">Review my answer</button>
-          <button class="btn" type="button" onclick="nextInterviewQuestion()">New question ↻</button>
+
+        <div class="card">
+            <h3>Start an AI interview</h3>
+
+            <form id="interview-form">
+                <div class="field">
+                    <label>Choose your skill</label>
+                    <input name="skill" required
+                        placeholder="Example: Python, Java, Machine Learning">
+                </div>
+
+                <div class="field">
+                    <label>Interview difficulty</label>
+                    <select name="level">
+                        <option>Beginner</option>
+                        <option>Intermediate</option>
+                        <option>Advanced</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Interview type</label>
+                    <select name="type">
+                        <option>Technical</option>
+                        <option>Conceptual</option>
+                        <option>Practical</option>
+                        <option>Mixed</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary">
+                    Start interview
+                </button>
+            </form>
         </div>
-      </form>
 
-      <div id="interview-result"></div>
-    </div>
+        <div class="card">
+            <h3>How it works</h3>
+            <p class="muted">
+                ROSCOE asks one question at a time, evaluates your
+                answer, provides feedback and adjusts the next question
+                based on your performance.
+            </p>
+        </div>
 
-    <div class="notice" style="margin-top:15px">
-      This is a frontend practice tool. The feedback is based on answer length and a general checklist, not a real AI evaluation.
-    </div>
-  `;
+        <div class="card" id="interview-session">
+            <h3>Interview session</h3>
+            <p class="muted">Your interview will appear here.</p>
+        </div>
+
+        <div class="card">
+            <h3>Interview history</h3>
+            ${data.interviewHistory.length
+                ? data.interviewHistory.slice(-10).reverse().map(item => `
+                    <div class="list-item">
+                        <div class="item-title">${escapeHTML(item.skill)}</div>
+                        <div class="item-subtitle">${escapeHTML(item.date)}</div>
+                    </div>
+                `).join("")
+                : '<p class="muted">No interviews recorded yet.</p>'}
+        </div>
+    `;
 }
 
-let activeInterviewQuestion = 0;
-
-function nextInterviewQuestion() {
-  activeInterviewQuestion = (activeInterviewQuestion + 1) % interviewQuestions.length;
-  const item = interviewQuestions[activeInterviewQuestion];
-
-  $("#interview-question").innerHTML = `
-    <span class="tag">QUESTION ${activeInterviewQuestion + 1}</span>
-    <h3 style="margin-top:14px;line-height:1.7">${escapeHTML(item.question)}</h3>
-    <p class="muted small">Consider covering: ${item.points.map(escapeHTML).join(" · ")}</p>
-  `;
-
-  $("#interview-answer").value = "";
-  $("#interview-result").innerHTML = "";
-}
-
-function evaluateInterview(event) {
-  event.preventDefault();
-
-  const answer = $("#interview-answer").value.trim();
-  const wordCount = answer.split(/\s+/).filter(Boolean).length;
-
-  const tips = [];
-
-  if (wordCount < 25) tips.push("Try adding more explanation and a concrete example.");
-  if (!/\b(example|for instance|such as)\b/i.test(answer)) {
-    tips.push("Include an example to demonstrate your understanding.");
-  }
-  if (!/\b(because|therefore|so that|which means)\b/i.test(answer)) {
-    tips.push("Explain why the concept matters or how it works.");
-  }
-
-  if (!tips.length) tips.push("Your answer has some useful detail. Check technical accuracy and practise explaining it aloud.");
-
-  $("#interview-result").innerHTML = `
-    <div class="result-box">
-      <h3>Practice feedback</h3>
-      <p>Your answer contains approximately ${wordCount} words.</p>
-      <ul>${tips.map((tip) => `<li>${escapeHTML(tip)}</li>`).join("")}</ul>
-      <p>Review the question's key points and refine your answer.</p>
-    </div>
-  `;
-}
+/* ==========================================
+   CAREER READINESS
+========================================== */
 
 function renderCareer() {
-  const target = escapeHTML(data.profile.target || "your target role");
+    const p = data.profile;
 
-  const careerSkills = [
-    "Programming fundamentals",
-    "Problem solving and data structures",
-    "Projects that demonstrate practical ability",
-    "Communication and explaining technical choices",
-    "Git, documentation and collaboration",
-    "Role-specific technical knowledge"
-  ];
+    const checklist = [
+        ["Profile completed", !!p.name && !!p.education],
+        ["Skills added", p.skills.length > 0],
+        ["Learning path started", data.skills.length > 0],
+        ["Project experience recorded", !!data.resume.projects],
+        ["Career target selected", !!p.target]
+    ];
 
-  return `
-    <div class="hero-card">
-      <span class="tag">↗ CAREER NAVIGATOR</span>
-      <h2>Prepare for the work you want.</h2>
-      <p>Identify the skills, projects and practice you may need for your target role.</p>
-    </div>
+    const score = Math.round(
+        checklist.filter(item => item[1]).length /
+        checklist.length * 100
+    );
 
-    <div class="section-heading"><h2>Your target role</h2></div>
-    <div class="card">
-      <span class="tag">CAREER GOAL</span>
-      <h2 style="margin-top:15px">${target}</h2>
-      <p class="muted small">Update your target anytime in My Profile.</p>
-    </div>
-
-    <div class="section-heading"><h2>Readiness checklist</h2></div>
-    <div class="card">
-      ${careerSkills.map((skill, index) => `
-        <div class="task-row">
-          <input type="checkbox" aria-label="${escapeHTML(skill)}">
-          <div class="task-copy">
-            <strong>${escapeHTML(skill)}</strong>
-            <small>Use this as a self-assessment checklist.</small>
-          </div>
+    return `
+        <div class="page-intro">
+            <h2>Career Readiness</h2>
+            <p class="muted">
+                Review the preparation steps for your target career.
+            </p>
         </div>
-      `).join("")}
-    </div>
 
-    <div class="section-heading"><h2>Suggested next steps</h2></div>
-    <div class="content-grid">
-      <button class="feature-card" onclick="navigate('learning')">
-        <span class="feature-icon">⌘</span>
-        <strong>Build a roadmap</strong>
-        <small>Organize your learning into manageable stages.</small>
-      </button>
-      <button class="feature-card" onclick="navigate('resume')">
-        <span class="feature-icon">▤</span>
-        <strong>Improve your resume</strong>
-        <small>Record your skills and projects.</small>
-      </button>
-    </div>
+        <div class="card">
+            <h3>Career preparation score</h3>
+            <strong style="font-size:36px">${score}%</strong>
 
-    <div class="notice" style="margin-top:15px">
-      Career readiness here is a self-assessment, not a verified job eligibility score. Real job requirements vary by employer.
-    </div>
-  `;
+            <div class="progress-track">
+                <div class="progress-fill" style="width:${score}%"></div>
+            </div>
+
+            <p class="muted small">
+                This is a checklist completion score, not a job placement prediction.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Your preparation checklist</h3>
+            ${checklist.map(item => `
+                <div class="list-item">
+                    <span class="item-title">${item[0]}</span>
+                    <span>${item[1] ? "✓ Complete" : "○ Pending"}</span>
+                </div>
+            `).join("")}
+        </div>
+
+        <div class="card">
+            <h3>Your target role</h3>
+            <p>${escapeHTML(p.target || "Not selected yet")}</p>
+            <p class="muted small">
+                Add your target role and skills in My Profile.
+            </p>
+        </div>
+    `;
 }
+
+/* ==========================================
+   SMART RESUME
+========================================== */
 
 function renderResume() {
-  const profile = data.profile;
-  const allSkills = [
-    ...profile.skills.split(",").map((skill) => skill.trim()).filter(Boolean),
-    ...data.learnedSkills
-  ];
+    const r = data.resume;
+    const p = data.profile;
 
-  const uniqueSkills = [...new Set(allSkills)];
+    return `
+        <div class="page-intro">
+            <h2>Smart Resume</h2>
+            <p class="muted">
+                Maintain your professional information.
+            </p>
+        </div>
 
-  return `
-    <div class="hero-card">
-      <span class="tag">▤ SMART RESUME</span>
-      <h2>Keep your achievements organized.</h2>
-      <p>Your resume preview uses the information you've saved in ROSCOE.</p>
-    </div>
+        <form id="resume-form" class="card">
 
-    <div class="section-heading"><h2>Resume update preference</h2></div>
-    <div class="card">
-      <div class="field">
-        <label for="resume-mode">When you add a new skill</label>
-        <select id="resume-mode" onchange="setResumeMode(this.value)">
-          <option value="approval" ${data.resumeMode === "approval" ? "selected" : ""}>Ask me before updating</option>
-          <option value="automatic" ${data.resumeMode === "automatic" ? "selected" : ""}>Automatically include in preview</option>
-        </select>
-      </div>
-      <p class="muted small">
-        This preference controls the local demo preview. It does not edit or submit an external resume.
-      </p>
-    </div>
+            <div class="field">
+                <label>Career objective</label>
+                <textarea name="objective"
+                    placeholder="Write your professional objective">${escapeHTML(r.objective)}</textarea>
+            </div>
 
-    <div class="section-heading"><h2>Your resume preview</h2></div>
-    <div class="card" id="resume-preview">
-      <h2>${escapeHTML(profile.name || "Your Name")}</h2>
-      <p class="muted">${escapeHTML(profile.role || "")}</p>
-      <div class="companion-divider"></div>
+            <div class="field">
+                <label>Projects</label>
+                <textarea name="projects"
+                    placeholder="Mention your projects and contributions">${escapeHTML(r.projects)}</textarea>
+            </div>
 
-      <h3>Career objective</h3>
-      <p class="muted small">${escapeHTML(profile.goals || "Add your career objective in My Profile.")}</p>
+            <div class="field">
+                <label>Experience</label>
+                <textarea name="experience"
+                    placeholder="Internship or work experience">${escapeHTML(r.experience)}</textarea>
+            </div>
 
-      <h3 style="margin-top:20px">Skills</h3>
-      <p class="muted small">${uniqueSkills.length
-        ? uniqueSkills.map(escapeHTML).join(" · ")
-        : "Add skills in My Profile or Learning Path."}</p>
+            <div class="field">
+                <label>Education</label>
+                <textarea name="education"
+                    placeholder="Your education">${escapeHTML(r.education)}</textarea>
+            </div>
 
-      <h3 style="margin-top:20px">Career interest</h3>
-      <p class="muted small">${escapeHTML(profile.target || "Not specified")}</p>
+            <button class="btn btn-primary">Save resume</button>
+            <button type="button" class="btn"
+                onclick="downloadResume()">Download resume</button>
+        </form>
 
-      <h3 style="margin-top:20px">Interests</h3>
-      <p class="muted small">${escapeHTML(profile.interests || "Not specified")}</p>
-
-      <div class="button-row">
-        <button class="btn btn-primary" onclick="printResume()">Print / Save as PDF</button>
-        <button class="btn" onclick="copyResume()">Copy resume text</button>
-      </div>
-    </div>
-  `;
+        <div class="card">
+            <h3>Resume preview</h3>
+            <h2>${escapeHTML(p.name || "Your Name")}</h2>
+            <p class="muted">${escapeHTML(p.email)}</p>
+            <p>${escapeHTML(r.objective)}</p>
+            <h3>Skills</h3>
+            <p>${escapeHTML(p.skills.join(", "))}</p>
+            <h3>Projects</h3>
+            <p>${escapeHTML(r.projects)}</p>
+            <h3>Experience</h3>
+            <p>${escapeHTML(r.experience)}</p>
+            <h3>Education</h3>
+            <p>${escapeHTML(r.education || p.education)}</p>
+        </div>
+    `;
 }
 
-function setResumeMode(mode) {
-  data.resumeMode = mode === "automatic" ? "automatic" : "approval";
-  saveData();
-  roscoeSay(data.resumeMode === "automatic"
-    ? "Automatic preview mode is enabled. Skills you record will appear in the resume preview."
-    : "Approval mode is enabled. Review your information in the preview before using it.");
+function downloadResume() {
+    const p = data.profile;
+    const r = data.resume;
+
+    const content = `
+${p.name}
+${p.email}
+
+CAREER OBJECTIVE
+${r.objective}
+
+EDUCATION
+${r.education || p.education}
+
+SKILLS
+${p.skills.join(", ")}
+
+PROJECTS
+${r.projects}
+
+EXPERIENCE
+${r.experience}
+`;
+
+    const blob = new Blob([content], {
+        type: "text/plain;charset=utf-8"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "ROSCOE-Resume.txt";
+    a.click();
+
+    URL.revokeObjectURL(url);
 }
 
-function getResumeText() {
-  const profile = data.profile;
-  const skills = [
-    ...profile.skills.split(",").map((skill) => skill.trim()).filter(Boolean),
-    ...data.learnedSkills
-  ];
-
-  return [
-    profile.name,
-    profile.role,
-    "",
-    "CAREER OBJECTIVE",
-    profile.goals,
-    "",
-    "SKILLS",
-    [...new Set(skills)].join(", "),
-    "",
-    "CAREER INTEREST",
-    profile.target,
-    "",
-    "INTERESTS",
-    profile.interests
-  ].join("\n");
-}
-
-function printResume() {
-  const preview = $("#resume-preview");
-  const original = document.body.innerHTML;
-
-  document.body.innerHTML = `
-    <div style="max-width:800px;margin:35px auto;padding:35px;color:#111;font-family:Arial,sans-serif">
-      <pre style="white-space:pre-wrap;font:15px/1.8 Arial,sans-serif">${escapeHTML(getResumeText())}</pre>
-    </div>
-  `;
-
-  window.print();
-  document.body.innerHTML = original;
-
-  // Reinitialize the app after printing.
-  showDate();
-  renderPage();
-}
-
-async function copyResume() {
-  const text = getResumeText();
-
-  try {
-    await navigator.clipboard.writeText(text);
-    roscoeSay("Your resume text has been copied.");
-  } catch {
-    const temporary = document.createElement("textarea");
-    temporary.value = text;
-    document.body.appendChild(temporary);
-    temporary.select();
-    const copied = document.execCommand("copy");
-    temporary.remove();
-    roscoeSay(copied ? "Your resume text has been copied." : "Copy was blocked by the browser. Select and copy the preview text manually.");
-  }
-}
+/* ==========================================
+   LIFE PLANNER
+========================================== */
 
 function renderPlanner() {
-  return `
-    <div class="hero-card">
-      <span class="tag">▦ LIFE PLANNER</span>
-      <h2>Turn your plans into actions.</h2>
-      <p>Manage daily tasks, add priorities and track what you have completed.</p>
-    </div>
-
-    <div class="section-heading"><h2>Add a task</h2></div>
-
-    <form class="card form-grid" onsubmit="addTask(event)">
-      <div class="field full-width">
-        <label for="task-title">Task description</label>
-        <input id="task-title" name="title" placeholder="e.g. Complete Python practice" required>
-      </div>
-      <div class="field">
-        <label for="task-category">Category</label>
-        <select id="task-category" name="category">
-          <option>Learning</option>
-          <option>Career</option>
-          <option>Personal</option>
-          <option>Health</option>
-          <option>Project</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="task-reminder">Daily reminder note</label>
-        <input id="task-reminder" name="reminder" value="${escapeHTML(data.reminder)}">
-      </div>
-      <div class="full-width">
-        <button class="btn btn-primary" type="submit">+ Add task</button>
-      </div>
-    </form>
-
-    <div class="section-heading">
-      <div><h2>Your task list</h2><p>${data.tasks.filter((task) => task.done).length} of ${data.tasks.length} completed</p></div>
-      <button class="btn" onclick="clearCompletedTasks()">Clear completed</button>
-    </div>
-
-    <div class="card">
-      ${data.tasks.length ? data.tasks.map((task) => `
-        <div class="task-row ${task.done ? "done" : ""}">
-          <input type="checkbox" ${task.done ? "checked" : ""} onchange="toggleTask(${task.id}, this.checked)" aria-label="Complete task">
-          <div class="task-copy">
-            <strong>${escapeHTML(task.title)}</strong>
-            <small>${escapeHTML(task.category)}</small>
-          </div>
-          <button class="btn btn-danger" onclick="deleteTask(${task.id})" aria-label="Delete task">✕</button>
+    return `
+        <div class="page-intro">
+            <h2>Life Planner</h2>
+            <p class="muted">
+                Organize your day and track your progress.
+            </p>
         </div>
-      `).join("") : '<div class="empty-state">No tasks yet. Add your first task above.</div>'}
-    </div>
 
-    <div class="section-heading"><h2>Your reminder</h2></div>
-    <div class="notice">✦ ${escapeHTML(data.reminder || "Add a reminder note above.")}</div>
-  `;
+        <form id="task-form" class="card">
+            <div class="field">
+                <label>Task name</label>
+                <input name="title" required
+                    placeholder="What do you want to complete?">
+            </div>
+
+            <div class="field">
+                <label>Due date</label>
+                <input name="date" type="date">
+            </div>
+
+            <button class="btn btn-primary">Add task</button>
+        </form>
+
+        <div class="card">
+            <h3>Your tasks</h3>
+
+            <div class="item-list">
+                ${data.tasks.length
+                    ? data.tasks.map((task,index) => `
+                        <div class="list-item ${task.done ? "done" : ""}">
+                            <div>
+                                <div class="item-title">${escapeHTML(task.title)}</div>
+                                <div class="item-subtitle">
+                                    ${escapeHTML(task.date || "No deadline")}
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                onclick="toggleTask(${index})">
+                                ${task.done ? "Undo" : "Complete"}
+                            </button>
+                        </div>
+                    `).join("")
+                    : '<div class="empty-state">Your planner is empty.</div>'}
+            </div>
+        </div>
+    `;
 }
 
-function addTask(event) {
-  event.preventDefault();
-
-  const form = new FormData(event.target);
-  const title = String(form.get("title") || "").trim();
-  if (!title) return;
-
-  data.tasks.push({
-    id: Date.now(),
-    title,
-    category: String(form.get("category") || "Personal"),
-    done: false
-  });
-
-  data.reminder = String(form.get("reminder") || "").trim();
-  saveData();
-  renderPage();
-  roscoeSay("Your new task is in your planner. Take it one step at a time.");
+function toggleTask(index) {
+    data.tasks[index].done = !data.tasks[index].done;
+    saveData();
+    renderPage();
 }
 
-function deleteTask(id) {
-  data.tasks = data.tasks.filter((task) => task.id !== id);
-  saveData();
-  renderPage();
-}
-
-function clearCompletedTasks() {
-  data.tasks = data.tasks.filter((task) => !task.done);
-  saveData();
-  renderPage();
-}
+/* ==========================================
+   SETTINGS
+========================================== */
 
 function renderSettings() {
-  return `
-    <div class="hero-card">
-      <span class="tag">⚙ PERSONAL SETTINGS</span>
-      <h2>Make ROSCOE work your way.</h2>
-      <p>Manage your local demo data and your preferences.</p>
-    </div>
+    return `
+        <div class="page-intro">
+            <h2>Settings</h2>
+            <p class="muted">
+                Manage your local data and preferences.
+            </p>
+        </div>
 
-    <div class="section-heading"><h2>Data & privacy</h2></div>
+        <div class="card">
+            <h3>Voice assistant</h3>
+            <p class="muted">
+                Enable microphone access once per browser session.
+                Say Hello ROSCOE to activate the assistant.
+            </p>
 
-    <div class="card">
-      <h3>Local browser storage</h3>
-      <p class="muted small">
-        This demo saves your profile, tasks and learning records in this browser using localStorage.
-        Clearing browser data may remove them. This is not cloud synchronization.
-      </p>
-      <div class="button-row">
-        <button class="btn" onclick="exportData()">Export my data</button>
-        <button class="btn btn-danger" onclick="resetData()">Reset all demo data</button>
-      </div>
-    </div>
+            <div class="button-row">
+                <button class="btn btn-primary"
+                    onclick="enableVoice()">
+                    Enable voice
+                </button>
 
-    <div class="section-heading"><h2>About ROSCOE</h2></div>
-    <div class="card">
-      <h3>Your personal growth companion</h3>
-      <p class="muted small">
-        ROSCOE combines planning, learning, interview practice and career preparation in one interface.
-        This version uses predefined frontend responses rather than a live AI model.
-      </p>
-      <span class="tag">FRONTEND DEMO · VERSION 2.0</span>
-    </div>
-  `;
+                <button class="btn"
+                    onclick="disableVoice()">
+                    Turn voice off
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Data & privacy</h3>
+            <p class="muted small">
+                Your profile, tasks, learning records and chat history
+                are saved in this browser using localStorage.
+                They are not automatically synchronized to other devices.
+            </p>
+
+            <div class="button-row">
+                <button class="btn" onclick="exportData()">
+                    Export my data
+                </button>
+
+                <button class="btn btn-danger" onclick="resetData()">
+                    Reset all data
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>About ROSCOE</h3>
+            <p class="muted">
+                ROSCOE is your personal life and career companion,
+                powered by a connected AI model.
+            </p>
+            <span class="tag">ROSCOE V3.0</span>
+        </div>
+    `;
 }
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json"
-  });
+/* ==========================================
+   PAGE RENDERER
+========================================== */
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "roscoe-data.json";
-  link.click();
-  URL.revokeObjectURL(url);
+function renderPage() {
+    const content = $("#app-content");
+
+    const renderers = {
+        dashboard: renderDashboard,
+        profile: renderProfile,
+        challenges: renderChallenges,
+        learning: renderLearning,
+        interview: renderInterview,
+        career: renderCareer,
+        resume: renderResume,
+        planner: renderPlanner,
+        settings: renderSettings
+    };
+
+    content.innerHTML = renderers[currentPage]();
 }
 
-function resetData() {
-  if (!confirm("Reset your profile, tasks and learning records? This cannot be undone.")) return;
+/* ==========================================
+   FORM HANDLERS
+========================================== */
 
-  data = structuredClone(defaultData);
-  saveData();
-  navigate("dashboard");
-  roscoeSay("Your demo data has been reset. You can set up your profile again.");
+document.addEventListener("click", event => {
+    const nav = event.target.closest("[data-page]");
+
+    if (nav) navigate(nav.dataset.page);
+});
+
+document.addEventListener("submit", async event => {
+    const form = event.target;
+
+    if (form.id === "profile-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.profile = {
+            name: fd.get("name").trim(),
+            email: fd.get("email").trim(),
+            education: fd.get("education").trim(),
+            target: fd.get("target").trim(),
+            skills: fd.get("skills")
+                .split(",")
+                .map(s => s.trim())
+                .filter(Boolean),
+            goals: fd.get("goals").trim(),
+            bio: fd.get("bio").trim()
+        };
+
+        saveData();
+        renderPage();
+        roscoeSay("Your profile has been saved.");
+    }
+
+    if (form.id === "challenge-form") {
+        event.preventDefault();
+
+        const title = new FormData(form).get("title").trim();
+
+        if (!title) return;
+
+        data.challenges.push({
+            title,
+            done: false
+        });
+
+        saveData();
+        renderPage();
+    }
+
+    if (form.id === "skill-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.skills.push({
+            name: fd.get("skill").trim(),
+            level: fd.get("level"),
+            learned: false
+        });
+
+        saveData();
+        renderPage();
+    }
+
+    if (form.id === "task-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.tasks.push({
+            title: fd.get("title").trim(),
+            date: fd.get("date"),
+            done: false
+        });
+
+        saveData();
+        renderPage();
+    }
+
+    if (form.id === "resume-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        data.resume = {
+            objective: fd.get("objective"),
+            projects: fd.get("projects"),
+            experience: fd.get("experience"),
+            education: fd.get("education")
+        };
+
+        saveData();
+        renderPage();
+        roscoeSay("Your resume information has been saved.");
+    }
+
+    if (form.id === "interview-form") {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+
+        const skill = fd.get("skill").trim();
+        const level = fd.get("level");
+        const type = fd.get("type");
+
+        if (!skill) return;
+
+        const session = {
+            skill,
+            level,
+            type,
+            date: new Date().toLocaleDateString()
+        };
+
+        data.interviewHistory.push(session);
+        saveData();
+
+        const sessionBox = $("#interview-session");
+
+        sessionBox.innerHTML = `
+            <h3>Interview started: ${escapeHTML(skill)}</h3>
+            <p class="muted">
+                ${escapeHTML(level)} · ${escapeHTML(type)}
+            </p>
+            <p class="muted">
+                ROSCOE is preparing your first question...
+            </p>
+        `;
+
+        const prompt = `
+Start a ${level} level ${type} interview on ${skill}.
+Ask one question at a time.
+Wait for my answer, evaluate it, explain mistakes,
+and continue with a relevant next question.
+Start with the first question now.
+`;
+
+        await sendToAI(prompt);
+    }
+
+    if (form.id === "roscoe-chat-form") {
+        event.preventDefault();
+        const input = $("#roscoe-chat-input");
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        input.value = "";
+        await sendToAI(message);
+    }
+});
+
+/* ==========================================
+   AI CONVERSATION
+========================================== */
+
+function getAIHistory() {
+    return data.chatHistory.slice(-12).map(item => ({
+        role: "user",
+        text: item.message
+    })).flat();
 }
 
-/* ROSCOE COMPANION */
+async function sendToAI(message, options = {}) {
+    const bot = $("#bot-message");
+
+    if (!message) return;
+
+    bot.textContent = "You: " + message;
+
+    setAvatarState("thinking", "ROSCOE IS THINKING");
+
+    try {
+        const history = data.chatHistory.slice(-12).flatMap(item => [
+            { role: "user", text: item.message },
+            { role: "assistant", text: item.reply }
+        ]);
+
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message,
+                profile: data.profile,
+                history
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "AI request failed.");
+        }
+
+        const reply = result.reply;
+
+        if (!reply) throw new Error("Empty AI response.");
+
+        data.chatHistory.push({
+            message,
+            reply,
+            timestamp: new Date().toISOString()
+        });
+
+        data.chatHistory = data.chatHistory.slice(-50);
+
+        saveData();
+
+        roscoeSay(reply);
+
+        if (voiceState.enabled && !voiceState.muted) {
+            await speak(reply);
+        } else {
+            setAvatarState("idle", "AI COMPANION ACTIVE");
+        }
+
+        return reply;
+
+    } catch (error) {
+        console.error("ROSCOE AI:", error);
+
+        const message =
+            "I couldn't connect to my AI service. " +
+            "Please check that the ROSCOE server is running and your API key is configured.";
+
+        roscoeSay(message);
+
+        setAvatarState("idle", "AI CONNECTION ERROR");
+
+        return null;
+    }
+}
+
+/* ==========================================
+   COMPANION QUICK ACTIONS
+========================================== */
 
 function roscoeSay(message) {
-  $("#bot-message").textContent = message;
+    const box = $("#bot-message");
+
+    if (box) box.textContent = message;
 }
 
 function roscoeReply(type) {
-  const replies = {
-    motivation: "You don't need to solve your whole future today. Pick one useful task, give it your full attention, and finish it. Progress comes from consistent action.",
-    challenge: "Your challenge: choose one skill, spend 20 focused minutes practising it, then write down one thing you learned. Open Daily Challenges to see today's mission.",
-    career: `Let's work toward ${data.profile.target || "your target career"}. Start by strengthening your fundamentals, building practical projects, and practising how to explain your work. Open Career Readiness to plan your next step.`
-  };
+    const prompts = {
+        motivation: "Motivate me with practical advice based on my goals.",
+        challenge: "Give me a new useful daily challenge based on my skills.",
+        career: "Give me personalized career guidance based on my profile."
+    };
 
-  roscoeSay(replies[type] || replies.motivation);
+    sendToAI(prompts[type] || "How can you help me today?");
 }
 
-function respondToMessage(message) {
-  const text = message.toLowerCase();
+/* ==========================================
+   AVATAR STATE
+========================================== */
 
-  if (/\b(hello|hi|hey|good morning|good evening)\b/.test(text)) {
-    return `Hey ${data.profile.name || "there"}! I'm here to help you plan, learn and grow. What would you like to focus on today?`;
-  }
+function setAvatarState(state, label) {
+    const avatar = $("#roscoe-avatar");
+    const status = $("#avatar-state");
 
-  if (/\b(motivat|sad|lazy|tired|discourag|procrastinat)\b/.test(text)) {
-    return "Take a breath. You don't have to do everything at once. Choose the smallest useful action you can finish in ten minutes, then build from there.";
-  }
+    if (avatar) {
+        avatar.classList.remove(
+            "speaking",
+            "thinking",
+            "listening"
+        );
 
-  if (/\b(challenge|task|mission)\b/.test(text)) {
-    return "Here's your mission: spend 20 focused minutes practising one skill, then write down what you learned. Open Daily Challenges for more ideas.";
-  }
+        if (state !== "idle") {
+            avatar.classList.add(state);
+        }
+    }
 
-  if (/\b(career|job|internship|future|profession)\b/.test(text)) {
-    return `Your current career goal is ${data.profile.target || "not set yet"}. Build a strong foundation, make projects you can demonstrate, and practise explaining your work. Open Career Readiness to assess your next steps.`;
-  }
-
-  if (/\b(learn|study|skill|roadmap|python|machine learning|ai\/ml)\b/.test(text)) {
-    return "A useful learning cycle is: understand one concept, practise it, build something small, and explain what you learned. Open Learning Path for your suggested roadmap.";
-  }
-
-  if (/\b(resume|cv|portfolio)\b/.test(text)) {
-    return "Open Smart Resume to see your profile, career objective and recorded skills together. Keep your project descriptions specific and honest.";
-  }
-
-  if (/\b(plan|schedule|organize|organise|routine|todo|to-do)\b/.test(text)) {
-    return "Let's make your plan manageable. Write down the most important task first, add two smaller tasks, and leave some time for review. Open Life Planner to record them.";
-  }
-
-  if (/\b(interview|question|practice|practise)\b/.test(text)) {
-    return "Open Interview Arena to practise a question. Try answering in your own words, explaining why, and giving a practical example.";
-  }
-
-  if (/\b(profile|goal|know me|my skills)\b/.test(text)) {
-    return `Your saved goal is "${data.profile.goals || "not set yet"}" and your target role is "${data.profile.target || "not set yet"}". You can update these in My Profile.`;
-  }
-
-  return "I can help you organize your goals, practise learning, prepare for interviews, and plan your next career steps. Try asking about learning, motivation, career, interviews, your resume, or your daily plan.";
+    if (status) status.textContent = label;
 }
 
-function sendChat(event) {
-  event.preventDefault();
+/* ==========================================
+   VOICE ASSISTANT
+========================================== */
 
-  const input = $("#roscoe-chat-input");
-  const message = input.value.trim();
-  if (!message) return;
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
-  const reply = respondToMessage(message);
-  data.chatHistory.push({
-    message,
-    reply,
-    timestamp: new Date().toISOString()
-  });
+const voiceState = {
+    enabled: false,
+    awake: false,
+    busy: false,
+    speaking: false,
+    muted: false,
+    running: false,
+    recognition: null,
+    restartTimer: null,
+    sleepTimer: null,
+    voices: []
+};
 
-  // Keep the saved chat history manageable.
-  data.chatHistory = data.chatHistory.slice(-50);
-  saveData();
+function updateVoiceUI() {
+    const button = $("#voice-toggle");
 
-  input.value = "";
-  roscoeSay(reply);
+    if (button) {
+        button.textContent = voiceState.enabled
+            ? "🎙 Voice ON"
+            : "🎙 Enable voice";
+
+        button.classList.toggle("active", voiceState.enabled);
+    }
+
+    const mute = $("#voice-mute");
+
+    if (mute) {
+        mute.textContent = voiceState.muted
+            ? "🔇 Unmute"
+            : "🔊 Mute";
+    }
 }
 
-function initializeApp() {
-  showDate();
+function setVoiceStatus(message, mode = "") {
+    const text = $("#voice-status-text");
+    const status = $("#voice-status");
 
-  $("#navigation").addEventListener("click", (event) => {
-    const button = event.target.closest("[data-page]");
-    if (button) navigate(button.dataset.page);
-  });
+    if (text) text.textContent = message;
 
-  $("#roscoe-chat-form").addEventListener("submit", sendChat);
-
-  renderPage();
+    if (status) {
+        status.className = "voice-status " + mode;
+    }
 }
 
-document.addEventListener("DOMContentLoaded", initializeApp);
+function loadSpeechVoices() {
+    if (!window.speechSynthesis) return;
+
+    voiceState.voices = window.speechSynthesis.getVoices();
+}
+
+if (window.speechSynthesis) {
+    loadSpeechVoices();
+    window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+}
+
+/* Select an available voice. Actual voice gender depends on the OS. */
+
+function chooseVoice(text) {
+    const isHindi = /[\u0900-\u097F]/.test(text);
+
+    const voices = voiceState.voices;
+
+    if (isHindi) {
+        return voices.find(v => /hi-IN/i.test(v.lang));
+    }
+
+    return voices.find(v =>
+        /female|zira|samantha|aria|jenny|neerja/i.test(v.name)
+    ) || voices.find(v => /en-IN/i.test(v.lang));
+}
+
+/* TEXT TO SPEECH */
+
+function speak(text) {
+    return new Promise(resolve => {
+        if (!window.speechSynthesis || voiceState.muted) {
+            resolve();
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        voiceState.speaking = true;
+
+        if (voiceState.recognition && voiceState.running) {
+            try {
+                voiceState.recognition.stop();
+            } catch {}
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        const voice = chooseVoice(text);
+
+        if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang;
+        } else {
+            utterance.lang = /[\u0900-\u097F]/.test(text)
+                ? "hi-IN"
+                : "en-IN";
+        }
+
+        utterance.rate = 1;
+        utterance.pitch = 1.05;
+        utterance.volume = 1;
+
+        setAvatarState("speaking", "ROSCOE IS SPEAKING");
+        setVoiceStatus("ROSCOE is speaking...", "speaking");
+
+        function finished() {
+            voiceState.speaking = false;
+            setAvatarState("idle", "AI COMPANION ACTIVE");
+            resolve();
+
+            if (voiceState.enabled) {
+                setTimeout(startRecognition, 500);
+            }
+        }
+
+        utterance.onend = finished;
+        utterance.onerror = finished;
+
+        window.speechSynthesis.speak(utterance);
+    });
+}
+
+/* SPEECH RECOGNITION */
+
+function createRecognition() {
+    if (!SpeechRecognition) return false;
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+        voiceState.running = true;
+
+        if (!voiceState.busy && !voiceState.speaking) {
+            setVoiceStatus(
+                voiceState.awake
+                    ? "Listening to your message..."
+                    : 'Listening for "Hello ROSCOE"...',
+                "listening"
+            );
+
+            setAvatarState("listening", "LISTENING");
+        }
+    };
+
+    recognition.onresult = event => {
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+            if (!event.results[i].isFinal) continue;
+
+            const transcript =
+                event.results[i][0].transcript.trim();
+
+            if (transcript) handleVoiceInput(transcript);
+        }
+    };
+
+    recognition.onerror = event => {
+        console.warn("Speech recognition:", event.error);
+
+        if (event.error === "not-allowed" ||
+            event.error === "service-not-allowed") {
+
+            voiceState.enabled = false;
+            updateVoiceUI();
+
+            setVoiceStatus(
+                "Microphone permission denied.",
+                "error"
+            );
+        }
+    };
+
+    recognition.onend = () => {
+        voiceState.running = false;
+
+        if (voiceState.enabled &&
+            !voiceState.speaking &&
+            !voiceState.busy) {
+
+            clearTimeout(voiceState.restartTimer);
+
+            voiceState.restartTimer = setTimeout(
+                startRecognition,
+                700
+            );
+        }
+    };
+
+    voiceState.recognition = recognition;
+
+    return true;
+}
+
+function startRecognition() {
+    if (!voiceState.enabled ||
+        !voiceState.recognition ||
+        voiceState.running ||
+        voiceState.busy ||
+        voiceState.speaking) {
+        return;
+    }
+
+    try {
+        voiceState.recognition.start();
+    } catch (error) {
+        console.warn("Recognition restart:", error);
+    }
+}
+
+/* WAKE WORD HANDLER */
+
+function wakeRoscoe(command = "") {
+    voiceState.awake = true;
+
+    clearTimeout(voiceState.sleepTimer);
+
+    voiceState.sleepTimer = setTimeout(() => {
+        voiceState.awake = false;
+
+        if (voiceState.enabled) {
+            setVoiceStatus(
+                'Listening for "Hello ROSCOE"...',
+                "listening"
+            );
+        }
+    }, 60000);
+
+    if (command) {
+        speak("Hey Boss!").then(() => sendToAI(command));
+    } else {
+        speak("Hey Boss! How can I help you?");
+    }
+}
+
+function handleVoiceInput(transcript) {
+    const wakePattern = /\bhello\s+roscoe\b/i;
+
+    if (!voiceState.awake) {
+        const match = transcript.match(wakePattern);
+
+        if (!match) return;
+
+        const command = transcript
+            .replace(wakePattern, "")
+            .replace(/^[,.\s]+/, "")
+            .trim();
+
+        wakeRoscoe(command);
+        return;
+    }
+
+    clearTimeout(voiceState.sleepTimer);
+
+    voiceState.sleepTimer = setTimeout(() => {
+        voiceState.awake = false;
+    }, 60000);
+
+    sendToAI(transcript);
+}
+
+/* ENABLE / DISABLE MICROPHONE */
+
+async function enableVoice() {
+    if (!SpeechRecognition) {
+        setVoiceStatus(
+            "Speech recognition needs a supported Chrome or Edge browser.",
+            "error"
+        );
+        return;
+    }
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia ||
+        !window.isSecureContext) {
+        setVoiceStatus(
+            "Use localhost or HTTPS and allow microphone access.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+
+        stream.getTracks().forEach(track => track.stop());
+
+        if (!voiceState.recognition && !createRecognition()) {
+            throw new Error("Speech recognition unavailable.");
+        }
+
+        voiceState.enabled = true;
+        voiceState.awake = false;
+
+        updateVoiceUI();
+
+        setVoiceStatus(
+            'Voice ready. Say "Hello ROSCOE".',
+            "listening"
+        );
+
+        startRecognition();
+
+    } catch (error) {
+        console.error(error);
+
+        setVoiceStatus(
+            "Please allow microphone access in browser settings.",
+            "error"
+        );
+    }
+}
+
+function disableVoice() {
+    voiceState.enabled = false;
+    voiceState.awake = false;
+
+    clearTimeout(voiceState.restartTimer);
+    clearTimeout(voiceState.sleepTimer);
+
+    if (voiceState.recognition) {
+        try {
+            voiceState.recognition.stop();
+        } catch {}
+    }
+
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+
+    voiceState.speaking = false;
+
+    updateVoiceUI();
+    setVoiceStatus("Voice assistant is turned off.");
+    setAvatarState("idle", "AI COMPANION ACTIVE");
+}
+
+/* MUTE VOICE OUTPUT */
+
+function toggleMute() {
+    voiceState.muted = !voiceState.muted;
+
+    if (voiceState.muted) {
+        window.speechSynthesis.cancel();
+        voiceState.speaking = false;
+    }
+
+    updateVoiceUI();
+}
+
+/* ==========================================
+   EXPORT AND RESET
+========================================== */
+
+function exportData() {
+    const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "roscoe-data.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function resetData() {
+    if (!confirm("Delete all ROSCOE data from this browser?")) {
+        return;
+    }
+
+    data = clone(defaultData);
+
+    saveData();
+    navigate("dashboard");
+
+    roscoeSay("Your local data has been reset.");
+}
+
+/* ==========================================
+   INITIALIZE APPLICATION
+========================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+    showDate();
+
+    renderPage();
+
+    const toggle = $("#voice-toggle");
+    const mute = $("#voice-mute");
+
+    if (toggle) {
+        toggle.addEventListener("click", enableVoice);
+    }
+
+    if (mute) {
+        mute.addEventListener("click", toggleMute);
+    }
+
+    updateVoiceUI();
+
+    fetch("/api/health")
+        .then(response => response.json())
+        .then(result => {
+            if (!result.ai_configured) {
+                setVoiceStatus(
+                    "AI API key not configured. Voice can listen, but AI replies need setup.",
+                    "error"
+                );
+            }
+        })
+        .catch(() => {
+            roscoeSay(
+                "ROSCOE is open, but the AI server is not connected. Start server.py."
+            );
+        });
+});
+
+/* Expose functions used by HTML buttons. */
+
+window.navigate = navigate;
+window.roscoeSay = roscoeSay;
+window.roscoeReply = roscoeReply;
+window.toggleTask = toggleTask;
+window.toggleSkill = toggleSkill;
+window.toggleChallenge = toggleChallenge;
+window.downloadResume = downloadResume;
+window.exportData = exportData;
+window.resetData = resetData;
+window.enableVoice = enableVoice;
+window.disableVoice = disableVoice;
